@@ -1,1 +1,0 @@
-<div id="event-map"></div>
