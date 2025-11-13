@@ -85,8 +85,17 @@ function eim_enqueue_admin_scripts($hook) {
 
     // Only load on event_poi edit pages
     if (('post.php' === $hook || 'post-new.php' === $hook) && 'event_poi' === $post_type) {
+        // Enqueue jQuery first (required dependency)
+        wp_enqueue_script('jquery');
+
+        // Enqueue Leaflet CSS
         wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
-        wp_enqueue_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', [], '1.9.4', true);
+
+        // Enqueue Leaflet JS with jQuery as dependency
+        wp_enqueue_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', ['jquery'], '1.9.4', false);
+
+        // Add inline style to ensure proper loading
+        wp_add_inline_style('leaflet-css', '#eim-admin-map { height: 400px; width: 100%; }');
     }
 }
 add_action('admin_enqueue_scripts', 'eim_enqueue_admin_scripts');

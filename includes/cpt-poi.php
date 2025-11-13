@@ -136,75 +136,123 @@ function eim_poi_meta_box_callback($post) {
 
     <script>
     jQuery(document).ready(function($) {
-        // Initialize map
-        var defaultLat = <?php echo !empty($lat) ? floatval($lat) : 45.0; ?>;
-        var defaultLng = <?php echo !empty($lng) ? floatval($lng) : 7.6; ?>;
-
-        var map = L.map('eim-admin-map').setView([defaultLat, defaultLng], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        var marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-
-        // Update coordinates when marker is moved
-        function updateCoordinates(lat, lng) {
-            $('#lat').val(lat.toFixed(6));
-            $('#lng').val(lng.toFixed(6));
+        // Wait for Leaflet to be fully loaded
+        if (typeof L === 'undefined') {
+            console.error('Leaflet not loaded! Cannot initialize map.');
+            return;
         }
 
-        marker.on('dragend', function(e) {
-            var position = marker.getLatLng();
-            updateCoordinates(position.lat, position.lng);
-        });
+        // Initialize map with timeout to ensure DOM is ready
+        setTimeout(function() {
+            try {
+                // Get default coordinates
+                var defaultLat = <?php echo !empty($lat) ? floatval($lat) : 45.0; ?>;
+                var defaultLng = <?php echo !empty($lng) ? floatval($lng) : 7.6; ?>;
 
-        // Click on map to set position
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            updateCoordinates(e.latlng.lat, e.latlng.lng);
-        });
+                console.log('Initializing admin map at:', defaultLat, defaultLng);
 
-        // Update marker when coordinates are manually changed
-        $('#lat, #lng').on('change', function() {
-            var lat = parseFloat($('#lat').val());
-            var lng = parseFloat($('#lng').val());
-            if (!isNaN(lat) && !isNaN(lng)) {
-                marker.setLatLng([lat, lng]);
-                map.setView([lat, lng]);
-            }
-        });
+                // Create map instance
+                var map = L.map('eim-admin-map', {
+                    center: [defaultLat, defaultLng],
+                    zoom: 13,
+                    scrollWheelZoom: true
+                });
 
-        // Address search using Nominatim
-        $('#eim-search-address').on('click', function() {
-            var address = $('#event_address').val();
-            if (!address) {
-                alert('<?php _e('Please enter an address', 'event-interactive-map'); ?>');
-                return;
-            }
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
 
-            $.ajax({
-                url: 'https://nominatim.openstreetmap.org/search',
-                data: {
-                    q: address,
-                    format: 'json',
-                    limit: 1
-                },
-                success: function(data) {
-                    if (data && data.length > 0) {
-                        var lat = parseFloat(data[0].lat);
-                        var lng = parseFloat(data[0].lon);
-                        marker.setLatLng([lat, lng]);
-                        map.setView([lat, lng], 15);
-                        updateCoordinates(lat, lng);
-                    } else {
-                        alert('<?php _e('Address not found', 'event-interactive-map'); ?>');
-                    }
-                },
-                error: function() {
-                    alert('<?php _e('Error searching address', 'event-interactive-map'); ?>');
+                // Add draggable marker
+                var marker = L.marker([defaultLat, defaultLng], {
+                    draggable: true,
+                    autoPan: true
+                }).addTo(map);
+
+                // Force map to recalculate size (fixes display issues)
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 250);
+
+                // Update coordinates when marker is moved
+                function updateCoordinates(lat, lng) {
+                    $('#lat').val(lat.toFixed(6));
+                    $('#lng').val(lng.toFixed(6));
                 }
-            });
-        });
+
+                marker.on('dragend', function(e) {
+                    var position = marker.getLatLng();
+                    updateCoordinates(position.lat, position.lng);
+                    console.log('Marker moved to:', position.lat, position.lng);
+                });
+
+                // Click on map to set position
+                map.on('click', function(e) {
+                    marker.setLatLng(e.latlng);
+                    updateCoordinates(e.latlng.lat, e.latlng.lng);
+                    console.log('Map clicked at:', e.latlng.lat, e.latlng.lng);
+                });
+
+                // Update marker when coordinates are manually changed
+                $('#lat, #lng').on('change', function() {
+                    var lat = parseFloat($('#lat').val());
+                    var lng = parseFloat($('#lng').val());
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        marker.setLatLng([lat, lng]);
+                        map.setView([lat, lng]);
+                        console.log('Coordinates manually set to:', lat, lng);
+                    }
+                });
+
+                // Address search using Nominatim
+                $('#eim-search-address').on('click', function() {
+                    var address = $('#event_address').val();
+                    if (!address) {
+                        alert('<?php _e('Please enter an address', 'event-interactive-map'); ?>');
+                        return;
+                    }
+
+                    console.log('Searching for address:', address);
+                    $(this).prop('disabled', true).text('<?php _e('Searching...', 'event-interactive-map'); ?>');
+
+                    $.ajax({
+                        url: 'https://nominatim.openstreetmap.org/search',
+                        data: {
+                            q: address,
+                            format: 'json',
+                            limit: 1
+                        },
+                        success: function(data) {
+                            if (data && data.length > 0) {
+                                var lat = parseFloat(data[0].lat);
+                                var lng = parseFloat(data[0].lon);
+                                marker.setLatLng([lat, lng]);
+                                map.setView([lat, lng], 15);
+                                updateCoordinates(lat, lng);
+                                console.log('Address found:', lat, lng);
+                            } else {
+                                alert('<?php _e('Address not found', 'event-interactive-map'); ?>');
+                                console.warn('Address not found:', address);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('<?php _e('Error searching address', 'event-interactive-map'); ?>');
+                            console.error('Geocoding error:', error);
+                        },
+                        complete: function() {
+                            $('#eim-search-address').prop('disabled', false).text('<?php _e('Search Address', 'event-interactive-map'); ?>');
+                        }
+                    });
+                });
+
+                console.log('Admin map initialized successfully!');
+
+            } catch (error) {
+                console.error('Error initializing admin map:', error);
+                $('#eim-admin-map').html('<div style="padding: 20px; background: #fee; border: 1px solid #c33; color: #c33;">Error loading map: ' + error.message + '</div>');
+            }
+        }, 500); // 500ms delay to ensure everything is loaded
     });
     </script>
     <?php
