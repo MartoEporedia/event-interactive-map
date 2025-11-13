@@ -30,14 +30,16 @@ function eim_get_pois_callback($request) {
     foreach ($posts as $post) {
         $lat = get_post_meta($post->ID, 'lat', true);
         $lng = get_post_meta($post->ID, 'lng', true);
+        $location_type = get_post_meta($post->ID, 'location_type', true);
+        $geometry_data = get_post_meta($post->ID, 'geometry_data', true);
 
-        // Only include POIs with valid coordinates
-        if (!empty($lat) && !empty($lng) && is_numeric($lat) && is_numeric($lng)) {
+        // Only include POIs with valid coordinates OR geometry data
+        if ((!empty($lat) && !empty($lng) && is_numeric($lat) && is_numeric($lng)) || !empty($geometry_data)) {
             $event_date = get_post_meta($post->ID, 'event_date', true);
             $event_time = get_post_meta($post->ID, 'event_time', true);
             $event_type = get_post_meta($post->ID, 'event_type', true);
 
-            $pois[] = [
+            $poi = [
                 'id' => absint($post->ID),
                 'title' => sanitize_text_field(get_the_title($post)),
                 'content' => wp_kses_post($post->post_content),
@@ -47,8 +49,16 @@ function eim_get_pois_callback($request) {
                 'type' => sanitize_text_field($event_type),
                 'date' => sanitize_text_field($event_date),
                 'time' => sanitize_text_field($event_time),
+                'location_type' => sanitize_text_field($location_type ?: 'point'),
                 'permalink' => esc_url(get_permalink($post))
             ];
+
+            // Add geometry data if available (for polygons/areas/circles)
+            if (!empty($geometry_data)) {
+                $poi['geometry'] = json_decode($geometry_data, true);
+            }
+
+            $pois[] = $poi;
         }
     }
 

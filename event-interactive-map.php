@@ -91,11 +91,17 @@ function eim_enqueue_admin_scripts($hook) {
         // Enqueue Leaflet CSS
         wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
 
+        // Enqueue Leaflet.Draw CSS for drawing tools
+        wp_enqueue_style('leaflet-draw-css', 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css', ['leaflet-css'], '1.0.4');
+
         // Enqueue Leaflet JS with jQuery as dependency
         wp_enqueue_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', ['jquery'], '1.9.4', false);
 
+        // Enqueue Leaflet.Draw JS for drawing tools
+        wp_enqueue_script('leaflet-draw-js', 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js', ['leaflet-js'], '1.0.4', false);
+
         // Add inline style to ensure proper loading
-        wp_add_inline_style('leaflet-css', '#eim-admin-map { height: 400px; width: 100%; }');
+        wp_add_inline_style('leaflet-css', '#eim-admin-map { height: 500px; width: 100%; }');
     }
 }
 add_action('admin_enqueue_scripts', 'eim_enqueue_admin_scripts');

@@ -58,6 +58,8 @@ function eim_poi_meta_box_callback($post) {
     $event_date = get_post_meta($post->ID, 'event_date', true);
     $event_time = get_post_meta($post->ID, 'event_time', true);
     $event_address = get_post_meta($post->ID, 'event_address', true);
+    $location_type = get_post_meta($post->ID, 'location_type', true) ?: 'point';
+    $geometry_data = get_post_meta($post->ID, 'geometry_data', true);
 
     ?>
     <div class="eim-meta-box">
@@ -72,8 +74,11 @@ function eim_poi_meta_box_callback($post) {
             .eim-field select { width: 100%; max-width: 400px; }
             .eim-field-group { display: flex; gap: 15px; }
             .eim-field-group .eim-field { flex: 1; }
-            #eim-admin-map { height: 400px; width: 100%; margin-top: 10px; border: 1px solid #ddd; }
+            #eim-admin-map { height: 500px; width: 100%; margin-top: 10px; border: 1px solid #ddd; }
             .eim-map-instructions { background: #f0f6fc; padding: 10px; border-left: 4px solid #0073aa; margin-bottom: 10px; }
+            .eim-location-type-group { display: flex; gap: 20px; margin-top: 10px; }
+            .eim-location-type-group label { display: flex; align-items: center; gap: 5px; font-weight: normal; cursor: pointer; }
+            .eim-location-type-group input[type="radio"] { margin: 0; }
         </style>
 
         <div class="eim-field">
@@ -103,10 +108,33 @@ function eim_poi_meta_box_callback($post) {
         </div>
 
         <div class="eim-field">
+            <label><?php _e('Location Type', 'event-interactive-map'); ?></label>
+            <div class="eim-location-type-group">
+                <label>
+                    <input type="radio" name="location_type" value="point" <?php checked($location_type, 'point'); ?>>
+                    <?php _e('Point (Single Location)', 'event-interactive-map'); ?>
+                </label>
+                <label>
+                    <input type="radio" name="location_type" value="polygon" <?php checked($location_type, 'polygon'); ?>>
+                    <?php _e('Area/Polygon (Region)', 'event-interactive-map'); ?>
+                </label>
+                <label>
+                    <input type="radio" name="location_type" value="circle" <?php checked($location_type, 'circle'); ?>>
+                    <?php _e('Circle (Radius)', 'event-interactive-map'); ?>
+                </label>
+            </div>
+            <p class="description">
+                <?php _e('Select "Point" for a specific location marker, or "Area/Polygon" to draw boundaries for region-wide events, or "Circle" for events with a radius.', 'event-interactive-map'); ?>
+            </p>
+        </div>
+
+        <div class="eim-field">
             <label for="event_address"><?php _e('Address', 'event-interactive-map'); ?></label>
             <input type="text" name="event_address" id="event_address" value="<?php echo esc_attr($event_address); ?>" placeholder="<?php _e('Enter address to search on map', 'event-interactive-map'); ?>">
             <button type="button" id="eim-search-address" class="button"><?php _e('Search Address', 'event-interactive-map'); ?></button>
         </div>
+
+        <input type="hidden" name="geometry_data" id="geometry_data" value="<?php echo esc_attr($geometry_data); ?>">
 
         <div class="eim-field-group">
             <div class="eim-field">
@@ -125,9 +153,10 @@ function eim_poi_meta_box_callback($post) {
                 <strong><?php _e('How to set location:', 'event-interactive-map'); ?></strong>
                 <ul style="margin: 5px 0 0 20px;">
                     <li><?php _e('Search for an address using the field above', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Click on the map to set the exact location', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Drag the marker to adjust the position', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Coordinates will update automatically', 'event-interactive-map'); ?></li>
+                    <li><strong><?php _e('For Point:', 'event-interactive-map'); ?></strong> <?php _e('Click on map or drag marker to set location', 'event-interactive-map'); ?></li>
+                    <li><strong><?php _e('For Area/Polygon:', 'event-interactive-map'); ?></strong> <?php _e('Use the polygon tool (⬠) in the map toolbar to draw boundaries', 'event-interactive-map'); ?></li>
+                    <li><strong><?php _e('For Circle:', 'event-interactive-map'); ?></strong> <?php _e('Use the circle tool (○) to draw a radius around the event', 'event-interactive-map'); ?></li>
+                    <li><?php _e('You can edit or delete drawn shapes using the toolbar', 'event-interactive-map'); ?></li>
                 </ul>
             </div>
             <div id="eim-admin-map"></div>
@@ -164,11 +193,64 @@ function eim_poi_meta_box_callback($post) {
                     maxZoom: 19
                 }).addTo(map);
 
+                // Feature group to store drawn items
+                var drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+
                 // Add draggable marker
                 var marker = L.marker([defaultLat, defaultLng], {
                     draggable: true,
                     autoPan: true
-                }).addTo(map);
+                });
+
+                // Get location type
+                var locationType = $('input[name="location_type"]:checked').val();
+
+                // Show marker only for point type
+                if (locationType === 'point') {
+                    marker.addTo(map);
+                }
+
+                // Initialize Leaflet.Draw controls
+                var drawControl = new L.Control.Draw({
+                    position: 'topright',
+                    draw: {
+                        polyline: false,
+                        marker: false,
+                        circlemarker: false,
+                        rectangle: false,
+                        polygon: {
+                            allowIntersection: false,
+                            showArea: true,
+                            metric: true
+                        },
+                        circle: {
+                            showRadius: true,
+                            metric: true
+                        }
+                    },
+                    edit: {
+                        featureGroup: drawnItems,
+                        remove: true
+                    }
+                });
+                map.addControl(drawControl);
+
+                // Load existing geometry if available
+                var existingGeometry = $('#geometry_data').val();
+                if (existingGeometry) {
+                    try {
+                        var geoJSON = JSON.parse(existingGeometry);
+                        L.geoJSON(geoJSON, {
+                            onEachFeature: function(feature, layer) {
+                                drawnItems.addLayer(layer);
+                            }
+                        });
+                        console.log('Loaded existing geometry:', geoJSON);
+                    } catch (e) {
+                        console.error('Error loading geometry:', e);
+                    }
+                }
 
                 // Force map to recalculate size (fixes display issues)
                 setTimeout(function() {
@@ -202,6 +284,67 @@ function eim_poi_meta_box_callback($post) {
                         marker.setLatLng([lat, lng]);
                         map.setView([lat, lng]);
                         console.log('Coordinates manually set to:', lat, lng);
+                    }
+                });
+
+                // Function to save geometry data
+                function saveGeometry() {
+                    var data = drawnItems.toGeoJSON();
+                    $('#geometry_data').val(JSON.stringify(data));
+                    console.log('Geometry saved:', data);
+                }
+
+                // Handle drawing events
+                map.on(L.Draw.Event.CREATED, function(event) {
+                    var layer = event.layer;
+
+                    // Clear previous drawings
+                    drawnItems.clearLayers();
+
+                    // Add new drawing
+                    drawnItems.addLayer(layer);
+
+                    // Update center coordinates from drawn shape
+                    var bounds = layer.getBounds ? layer.getBounds() : null;
+                    if (bounds) {
+                        var center = bounds.getCenter();
+                        updateCoordinates(center.lat, center.lng);
+                    } else if (layer.getLatLng) {
+                        var latlng = layer.getLatLng();
+                        updateCoordinates(latlng.lat, latlng.lng);
+                    }
+
+                    saveGeometry();
+                    console.log('Shape created:', event.layerType);
+                });
+
+                // Handle edit events
+                map.on(L.Draw.Event.EDITED, function(event) {
+                    saveGeometry();
+                    console.log('Shapes edited');
+                });
+
+                // Handle delete events
+                map.on(L.Draw.Event.DELETED, function(event) {
+                    saveGeometry();
+                    console.log('Shapes deleted');
+                });
+
+                // Handle location type change
+                $('input[name="location_type"]').on('change', function() {
+                    var selectedType = $(this).val();
+                    console.log('Location type changed to:', selectedType);
+
+                    if (selectedType === 'point') {
+                        // Show marker, hide drawing tools would be in future enhancement
+                        if (!map.hasLayer(marker)) {
+                            marker.addTo(map);
+                        }
+                    } else {
+                        // Hide marker for area/polygon/circle types
+                        if (map.hasLayer(marker)) {
+                            map.removeLayer(marker);
+                        }
                     }
                 });
 
@@ -278,12 +421,17 @@ function eim_save_poi_meta($post_id) {
     }
 
     // Save fields
-    $fields = ['lat', 'lng', 'event_type', 'event_date', 'event_time', 'event_address'];
+    $fields = ['lat', 'lng', 'event_type', 'event_date', 'event_time', 'event_address', 'location_type'];
 
     foreach ($fields as $field) {
         if (isset($_POST[$field])) {
             update_post_meta($post_id, $field, sanitize_text_field($_POST[$field]));
         }
+    }
+
+    // Save geometry data separately (JSON data)
+    if (isset($_POST['geometry_data'])) {
+        update_post_meta($post_id, 'geometry_data', wp_kses_post($_POST['geometry_data']));
     }
 }
 add_action('save_post_event_poi', 'eim_save_poi_meta');

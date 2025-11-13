@@ -7,6 +7,7 @@
     let markerCluster;
     let allPois = [];
     let userMarker = null;
+    let geometryLayers = []; // Store polygon/circle layers
 
     // Custom icons for different event types
     const eventIcons = {
@@ -60,6 +61,59 @@
             popupAnchor: [0, -40]
         })
     };
+
+    // Geometry styles for polygons and circles (matching marker colors)
+    const geometryStyles = {
+        concert: {
+            color: '#9b59b6',
+            fillColor: '#9b59b6',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        exhibition: {
+            color: '#e74c3c',
+            fillColor: '#e74c3c',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        conference: {
+            color: '#3498db',
+            fillColor: '#3498db',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        workshop: {
+            color: '#f39c12',
+            fillColor: '#f39c12',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        festival: {
+            color: '#d35400',
+            fillColor: '#d35400',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        sports: {
+            color: '#27ae60',
+            fillColor: '#27ae60',
+            fillOpacity: 0.3,
+            weight: 3
+        },
+        other: {
+            color: '#7f8c8d',
+            fillColor: '#7f8c8d',
+            fillOpacity: 0.3,
+            weight: 3
+        }
+    };
+
+    /**
+     * Get geometry style based on event type
+     */
+    function getGeometryStyle(eventType) {
+        return geometryStyles[eventType] || geometryStyles.other;
+    }
 
     /**
      * Initialize the map
@@ -144,9 +198,13 @@
      * Display POIs on map
      */
     function displayPois(pois) {
-        // Clear existing markers
+        // Clear existing markers and geometry
         markerCluster.clearLayers();
         markers = [];
+
+        // Clear existing geometry layers
+        geometryLayers.forEach(layer => map.removeLayer(layer));
+        geometryLayers = [];
 
         if (!pois || pois.length === 0) {
             showNoEvents();
@@ -156,31 +214,59 @@
         const bounds = L.latLngBounds();
 
         pois.forEach(poi => {
-            if (poi.lat && poi.lng) {
-                const icon = eventIcons[poi.type] || eventIcons.other;
-                const marker = L.marker([poi.lat, poi.lng], { icon: icon });
+            const popupContent = createPopupContent(poi);
 
-                // Create popup content
-                const popupContent = createPopupContent(poi);
-                marker.bindPopup(popupContent, {
-                    maxWidth: 300,
-                    className: 'eim-popup'
-                });
+            // Handle different location types
+            if (poi.location_type === 'polygon' || poi.location_type === 'circle') {
+                // Render geometry (polygon or circle)
+                if (poi.geometry && poi.geometry.features && poi.geometry.features.length > 0) {
+                    const geoJSONLayer = L.geoJSON(poi.geometry, {
+                        style: function() {
+                            return getGeometryStyle(poi.type);
+                        },
+                        onEachFeature: function(feature, layer) {
+                            layer.bindPopup(popupContent, {
+                                maxWidth: 300,
+                                className: 'eim-popup'
+                            });
 
-                markerCluster.addLayer(marker);
-                markers.push(marker);
-                bounds.extend([poi.lat, poi.lng]);
+                            // Extend bounds to include geometry
+                            if (layer.getBounds) {
+                                bounds.extend(layer.getBounds());
+                            }
+                        }
+                    }).addTo(map);
+
+                    geometryLayers.push(geoJSONLayer);
+                }
+            } else {
+                // Default: render as point marker
+                if (poi.lat && poi.lng) {
+                    const icon = eventIcons[poi.type] || eventIcons.other;
+                    const marker = L.marker([poi.lat, poi.lng], { icon: icon });
+
+                    marker.bindPopup(popupContent, {
+                        maxWidth: 300,
+                        className: 'eim-popup'
+                    });
+
+                    markerCluster.addLayer(marker);
+                    markers.push(marker);
+                    bounds.extend([poi.lat, poi.lng]);
+                }
             }
         });
 
-        // Auto-center map to show all markers
-        if (markers.length > 0) {
+        // Auto-center map to show all markers and geometry
+        if (markers.length > 0 || geometryLayers.length > 0) {
             // Small delay to ensure map is fully rendered
             setTimeout(() => {
-                map.fitBounds(bounds, {
-                    padding: [50, 50],
-                    maxZoom: 15
-                });
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, {
+                        padding: [50, 50],
+                        maxZoom: 15
+                    });
+                }
             }, 100);
         }
     }
@@ -362,15 +448,31 @@
             userMarker = null;
         }
 
-        if (markers.length > 0) {
+        if (markers.length > 0 || geometryLayers.length > 0) {
             const bounds = L.latLngBounds();
+
+            // Add marker bounds
             markers.forEach(marker => {
                 bounds.extend(marker.getLatLng());
             });
-            map.fitBounds(bounds, {
-                padding: [50, 50],
-                maxZoom: 15
+
+            // Add geometry bounds
+            geometryLayers.forEach(layer => {
+                layer.eachLayer(function(sublayer) {
+                    if (sublayer.getBounds) {
+                        bounds.extend(sublayer.getBounds());
+                    } else if (sublayer.getLatLng) {
+                        bounds.extend(sublayer.getLatLng());
+                    }
+                });
             });
+
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: 15
+                });
+            }
         } else {
             const mapElement = document.getElementById('event-map');
             const centerLat = parseFloat(mapElement.dataset.centerLat) || 45.0;
