@@ -7,18 +7,7 @@
             </button>
         </div>
 
-        <div class="eim-control-group">
-            <select id="eim-type-filter">
-                <option value=""><?php _e('All Types', 'event-interactive-map'); ?></option>
-                <option value="concert"><?php _e('Concert', 'event-interactive-map'); ?></option>
-                <option value="exhibition"><?php _e('Exhibition', 'event-interactive-map'); ?></option>
-                <option value="conference"><?php _e('Conference', 'event-interactive-map'); ?></option>
-                <option value="workshop"><?php _e('Workshop', 'event-interactive-map'); ?></option>
-                <option value="festival"><?php _e('Festival', 'event-interactive-map'); ?></option>
-                <option value="sports"><?php _e('Sports', 'event-interactive-map'); ?></option>
-                <option value="other"><?php _e('Other', 'event-interactive-map'); ?></option>
-            </select>
-        </div>
+        <div id="eim-day-filter" class="eim-control-group eim-day-filter-group" style="display:none;"></div>
 
         <button id="eim-locate-btn" class="eim-btn" title="<?php esc_attr_e('Locate Me', 'event-interactive-map'); ?>">
             <span class="dashicons dashicons-location"></span>

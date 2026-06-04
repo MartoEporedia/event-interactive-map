@@ -1,78 +1,29 @@
 (function($) {
     'use strict';
 
-    // Global variables
     let map;
     let markers = [];
     let markerCluster;
     let allPois = [];
     let userMarker = null;
+    let activeDay = '';
 
-    // Custom icons for different event types
-    const eventIcons = {
-        concert: L.divIcon({
-            className: 'eim-marker eim-marker-concert',
-            html: '<span class="dashicons dashicons-format-audio"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        exhibition: L.divIcon({
-            className: 'eim-marker eim-marker-exhibition',
-            html: '<span class="dashicons dashicons-admin-appearance"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        conference: L.divIcon({
-            className: 'eim-marker eim-marker-conference',
-            html: '<span class="dashicons dashicons-groups"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        workshop: L.divIcon({
-            className: 'eim-marker eim-marker-workshop',
-            html: '<span class="dashicons dashicons-welcome-learn-more"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        festival: L.divIcon({
-            className: 'eim-marker eim-marker-festival',
-            html: '<span class="dashicons dashicons-tickets-alt"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        sports: L.divIcon({
-            className: 'eim-marker eim-marker-sports',
-            html: '<span class="dashicons dashicons-awards"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        }),
-        other: L.divIcon({
-            className: 'eim-marker eim-marker-other',
-            html: '<span class="dashicons dashicons-location-alt"></span>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        })
-    };
+    const stageIcon = L.divIcon({
+        className: 'eim-marker eim-marker-stage',
+        html: '<span class="dashicons dashicons-tickets-alt"></span>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -44]
+    });
 
-    /**
-     * Initialize the map
-     */
     function initMap() {
         const mapElement = document.getElementById('event-map');
         if (!mapElement) return;
 
-        const zoom = parseInt(mapElement.dataset.zoom) || 13;
-        const centerLat = parseFloat(mapElement.dataset.centerLat) || 45.0;
-        const centerLng = parseFloat(mapElement.dataset.centerLng) || 7.6;
+        const zoom      = parseInt(mapElement.dataset.zoom) || 15;
+        const centerLat = parseFloat(mapElement.dataset.centerLat) || 45.1792;
+        const centerLng = parseFloat(mapElement.dataset.centerLng) || 7.6497;
 
-        // Create map
         map = L.map('event-map', {
             zoomControl: true,
             scrollWheelZoom: true,
@@ -80,189 +31,180 @@
             tap: true
         });
 
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
-        // Initialize marker cluster group
         markerCluster = L.markerClusterGroup({
-            maxClusterRadius: 50,
+            maxClusterRadius: 40,
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
             zoomToBoundsOnClick: true
         });
-
         map.addLayer(markerCluster);
-
-        // Set initial view
         map.setView([centerLat, centerLng], zoom);
 
-        // Load POIs
         loadPois();
-
-        // Setup event listeners
         setupEventListeners();
     }
 
-    /**
-     * Load POIs from REST API
-     */
-    function loadPois(filterType = '') {
+    function loadPois() {
         showLoading();
         hideError();
 
-        const url = filterType
-            ? `${eimData.restUrl}?type=${encodeURIComponent(filterType)}`
+        const url = eimData.mapSet
+            ? `${eimData.restUrl}?map_set=${encodeURIComponent(eimData.mapSet)}`
             : eimData.restUrl;
 
-        fetch(url, {
-            headers: {
-                'X-WP-Nonce': eimData.nonce
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
+        fetch(url, { headers: { 'X-WP-Nonce': eimData.nonce } })
+        .then(r => {
+            if (!r.ok) throw new Error(r.status);
+            return r.json();
         })
         .then(data => {
             hideLoading();
             allPois = data;
-            displayPois(data);
+            buildDayFilter(allPois);
+            filterAndDisplay(activeDay);
         })
-        .catch(error => {
-            console.error('Error loading POIs:', error);
+        .catch(() => {
             hideLoading();
             showError();
         });
     }
 
-    /**
-     * Display POIs on map
-     */
-    function displayPois(pois) {
-        // Clear existing markers
+    function filterAndDisplay(day) {
+        const filtered = day
+            ? allPois.filter(poi =>
+                Array.isArray(poi.program) &&
+                poi.program.some(slot => slot.day === day)
+              )
+            : allPois;
+        displayPois(filtered, day);
+    }
+
+    function displayPois(pois, day) {
         markerCluster.clearLayers();
         markers = [];
 
-        if (!pois || pois.length === 0) {
-            showNoEvents();
-            return;
-        }
+        if (!pois || pois.length === 0) return;
 
         const bounds = L.latLngBounds();
 
         pois.forEach(poi => {
-            if (poi.lat && poi.lng) {
-                const icon = eventIcons[poi.type] || eventIcons.other;
-                const marker = L.marker([poi.lat, poi.lng], { icon: icon });
+            if (!poi.lat || !poi.lng) return;
 
-                // Create popup content
-                const popupContent = createPopupContent(poi);
-                marker.bindPopup(popupContent, {
-                    maxWidth: 300,
-                    className: 'eim-popup'
-                });
+            const marker = L.marker([poi.lat, poi.lng], { icon: stageIcon });
+            marker.bindPopup(createPopupContent(poi, day), {
+                maxWidth: 320,
+                className: 'eim-popup'
+            });
 
-                markerCluster.addLayer(marker);
-                markers.push(marker);
-                bounds.extend([poi.lat, poi.lng]);
-            }
+            markerCluster.addLayer(marker);
+            markers.push(marker);
+            bounds.extend([poi.lat, poi.lng]);
         });
 
-        // Auto-center map to show all markers
         if (markers.length > 0) {
-            // Small delay to ensure map is fully rendered
             setTimeout(() => {
-                map.fitBounds(bounds, {
-                    padding: [50, 50],
-                    maxZoom: 15
-                });
+                map.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
             }, 100);
         }
     }
 
-    /**
-     * Create popup content for a POI
-     */
-    function createPopupContent(poi) {
+    // Colour palette for day buttons (cycles for N days)
+    const DAY_COLORS = ['eim-day-color-0', 'eim-day-color-1', 'eim-day-color-2', 'eim-day-color-3', 'eim-day-color-4'];
+    let dayColorMap = {}; // day label → CSS color class
+
+    function buildDayFilter(pois) {
+        const days = [];
+        pois.forEach(poi => {
+            (poi.program || []).forEach(slot => {
+                if (slot.day && !days.includes(slot.day)) days.push(slot.day);
+            });
+        });
+
+        const $container = $('#eim-day-filter');
+        $container.empty();
+
+        if (days.length === 0) { $container.hide(); return; }
+
+        dayColorMap = {};
+        days.forEach((day, i) => { dayColorMap[day] = DAY_COLORS[i % DAY_COLORS.length]; });
+
+        const $all = $(`<button class="eim-day-btn active" data-day="">${eimData.strings.allDays || 'All'}</button>`);
+        $container.append($all);
+
+        days.forEach(day => {
+            const cls = dayColorMap[day];
+            $container.append(`<button class="eim-day-btn ${cls}" data-day="${escapeHtml(day)}">${escapeHtml(day)}</button>`);
+        });
+
+        $container.show();
+    }
+
+    function createPopupContent(poi, filterDay) {
         let html = `<div class="eim-popup-content">`;
         html += `<h3>${escapeHtml(poi.title)}</h3>`;
 
-        if (poi.type) {
-            const typeLabel = eimData.types[poi.type] || poi.type;
-            html += `<div class="eim-popup-type eim-type-${poi.type}">${escapeHtml(typeLabel)}</div>`;
-        }
+        const program = Array.isArray(poi.program) ? poi.program : [];
+        const slots = filterDay
+            ? program.filter(s => s.day === filterDay)
+            : program;
 
-        if (poi.date || poi.time) {
-            html += `<div class="eim-popup-datetime">`;
-            html += `<span class="dashicons dashicons-calendar-alt"></span>`;
-            if (poi.date) {
-                html += formatDate(poi.date);
-            }
-            if (poi.time) {
-                html += ` - ${escapeHtml(poi.time)}`;
-            }
+        if (slots.length > 0) {
+            // group by day
+            const byDay = {};
+            slots.forEach(s => {
+                const d = s.day || 'N/D';
+                if (!byDay[d]) byDay[d] = [];
+                byDay[d].push(s);
+            });
+
+            html += `<div class="eim-popup-program">`;
+            Object.entries(byDay).forEach(([day, daySlots]) => {
+                const colorCls = dayColorMap[day] || 'eim-day-color-0';
+                html += `<div class="eim-popup-day-header ${colorCls}">${escapeHtml(day)}</div>`;
+                daySlots.forEach(slot => {
+                    const time = slot.time ? `<span class="eim-slot-time">${escapeHtml(slot.time)}</span>` : '';
+                    const band = slot.link
+                        ? `<a href="${escapeHtml(slot.link)}" target="_blank">${escapeHtml(slot.band)}</a>`
+                        : escapeHtml(slot.band);
+                    html += `<div class="eim-slot">${time}<span class="eim-slot-band">${band}</span></div>`;
+                });
+            });
             html += `</div>`;
-        }
-
-        if (poi.excerpt) {
-            html += `<div class="eim-popup-excerpt">${poi.excerpt}</div>`;
-        }
-
-        if (poi.permalink) {
-            html += `<a href="${escapeHtml(poi.permalink)}" class="eim-popup-link" target="_blank">`;
-            html += `${eimData.strings.viewDetails} <span class="dashicons dashicons-external"></span>`;
-            html += `</a>`;
+        } else {
+            html += `<p class="eim-popup-empty">Nessun concerto per questo filtro.</p>`;
         }
 
         html += `</div>`;
         return html;
     }
 
-    /**
-     * Setup event listeners
-     */
     function setupEventListeners() {
-        // Type filter
-        $('#eim-type-filter').on('change', function() {
-            const selectedType = $(this).val();
-            loadPois(selectedType);
+        // day filter buttons
+        $(document).on('click', '.eim-day-btn', function() {
+            $('.eim-day-btn').removeClass('active');
+            $(this).addClass('active');
+            activeDay = $(this).data('day');
+            filterAndDisplay(activeDay);
         });
 
-        // Search location
+        // location search
         $('#eim-search-btn').on('click', performSearch);
         $('#eim-search-input').on('keypress', function(e) {
-            if (e.which === 13) {
-                performSearch();
-            }
+            if (e.which === 13) performSearch();
         });
 
-        // Geolocation
         $('#eim-locate-btn').on('click', geolocateUser);
-
-        // Reset view
         $('#eim-reset-btn').on('click', resetView);
+        $('#eim-retry-btn').on('click', loadPois);
 
-        // Retry button
-        $('#eim-retry-btn').on('click', function() {
-            loadPois();
-        });
-
-        // Responsive map resize
-        $(window).on('resize', function() {
-            if (map) {
-                map.invalidateSize();
-            }
-        });
+        $(window).on('resize', () => { if (map) map.invalidateSize(); });
     }
 
-    /**
-     * Perform location search
-     */
     function performSearch() {
         const query = $('#eim-search-input').val().trim();
         if (!query) return;
@@ -271,185 +213,68 @@
 
         $.ajax({
             url: 'https://nominatim.openstreetmap.org/search',
-            data: {
-                q: query,
-                format: 'json',
-                limit: 1
-            },
-            success: function(data) {
+            data: { q: query, format: 'json', limit: 1 },
+            success(data) {
                 if (data && data.length > 0) {
                     const lat = parseFloat(data[0].lat);
                     const lng = parseFloat(data[0].lon);
-                    map.setView([lat, lng], 14);
-
-                    // Add temporary marker for searched location
-                    if (userMarker) {
-                        map.removeLayer(userMarker);
-                    }
+                    map.setView([lat, lng], 16);
+                    if (userMarker) map.removeLayer(userMarker);
                     userMarker = L.marker([lat, lng], {
                         icon: L.divIcon({
                             className: 'eim-marker eim-marker-search',
                             html: '<span class="dashicons dashicons-search"></span>',
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 30]
+                            iconSize: [30, 30], iconAnchor: [15, 30]
                         })
                     }).addTo(map);
-                } else {
-                    alert(eimData.strings.error);
                 }
             },
-            error: function() {
-                alert(eimData.strings.error);
-            },
-            complete: function() {
+            complete() {
                 $('#eim-search-btn').prop('disabled', false).removeClass('loading');
             }
         });
     }
 
-    /**
-     * Geolocate user
-     */
     function geolocateUser() {
-        if (!navigator.geolocation) {
-            alert(eimData.strings.geolocationError);
-            return;
-        }
-
+        if (!navigator.geolocation) return;
         $('#eim-locate-btn').addClass('loading');
-
         navigator.geolocation.getCurrentPosition(
-            function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                map.setView([lat, lng], 14);
-
-                // Add user location marker
-                if (userMarker) {
-                    map.removeLayer(userMarker);
-                }
+            pos => {
+                const { latitude: lat, longitude: lng } = pos.coords;
+                map.setView([lat, lng], 16);
+                if (userMarker) map.removeLayer(userMarker);
                 userMarker = L.marker([lat, lng], {
                     icon: L.divIcon({
                         className: 'eim-marker eim-marker-user',
                         html: '<span class="dashicons dashicons-admin-site-alt3"></span>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 30]
+                        iconSize: [30, 30], iconAnchor: [15, 30]
                     })
                 }).addTo(map);
-
                 $('#eim-locate-btn').removeClass('loading');
             },
-            function(error) {
-                console.error('Geolocation error:', error);
-                alert(eimData.strings.geolocationError);
-                $('#eim-locate-btn').removeClass('loading');
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            }
+            () => $('#eim-locate-btn').removeClass('loading'),
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
         );
     }
 
-    /**
-     * Reset map view
-     */
     function resetView() {
-        if (userMarker) {
-            map.removeLayer(userMarker);
-            userMarker = null;
-        }
-
+        if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
         if (markers.length > 0) {
             const bounds = L.latLngBounds();
-            markers.forEach(marker => {
-                bounds.extend(marker.getLatLng());
-            });
-            map.fitBounds(bounds, {
-                padding: [50, 50],
-                maxZoom: 15
-            });
-        } else {
-            const mapElement = document.getElementById('event-map');
-            const centerLat = parseFloat(mapElement.dataset.centerLat) || 45.0;
-            const centerLng = parseFloat(mapElement.dataset.centerLng) || 7.6;
-            const zoom = parseInt(mapElement.dataset.zoom) || 13;
-            map.setView([centerLat, centerLng], zoom);
+            markers.forEach(m => bounds.extend(m.getLatLng()));
+            map.fitBounds(bounds, { padding: [80, 80], maxZoom: 16 });
         }
     }
 
-    /**
-     * Show loading state
-     */
-    function showLoading() {
-        $('#eim-loading').show();
-        $('#event-map').css('opacity', '0.5');
-    }
+    function showLoading() { $('#eim-loading').show(); $('#event-map').css('opacity', '0.5'); }
+    function hideLoading() { $('#eim-loading').hide(); $('#event-map').css('opacity', '1'); }
+    function showError()   { $('#eim-error').show(); }
+    function hideError()   { $('#eim-error').hide(); }
 
-    /**
-     * Hide loading state
-     */
-    function hideLoading() {
-        $('#eim-loading').hide();
-        $('#event-map').css('opacity', '1');
-    }
-
-    /**
-     * Show error message
-     */
-    function showError() {
-        $('#eim-error').show();
-    }
-
-    /**
-     * Hide error message
-     */
-    function hideError() {
-        $('#eim-error').hide();
-    }
-
-    /**
-     * Show no events message
-     */
-    function showNoEvents() {
-        // Could display a message or keep map empty
-        console.log(eimData.strings.noEvents);
-    }
-
-    /**
-     * Format date string
-     */
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return dateString;
-        }
-        return date.toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    }
-
-    /**
-     * Escape HTML to prevent XSS
-     */
     function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return String(text).replace(/[&<>"']/g, m => map[m]);
+        return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    // Initialize when document is ready
-    $(document).ready(function() {
-        initMap();
-    });
+    $(document).ready(initMap);
 
 })(jQuery);

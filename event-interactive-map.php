@@ -53,16 +53,17 @@ function eim_enqueue_scripts() {
     // Localize script with data
     wp_localize_script('eim-map', 'eimData', [
         'restUrl' => esc_url_raw(rest_url('eim/v1/pois')),
+        'mapSet'  => sanitize_title($atts['group']),
         'nonce'   => wp_create_nonce('wp_rest'),
         'strings' => [
-            'loading' => __('Loading events...', 'event-interactive-map'),
-            'error' => __('Error loading events. Please try again.', 'event-interactive-map'),
-            'noEvents' => __('No events found.', 'event-interactive-map'),
-            'allTypes' => __('All Types', 'event-interactive-map'),
-            'viewDetails' => __('View Details', 'event-interactive-map'),
-            'locateMe' => __('Locate Me', 'event-interactive-map'),
+            'loading'           => __('Loading events...', 'event-interactive-map'),
+            'error'             => __('Error loading events. Please try again.', 'event-interactive-map'),
+            'noEvents'          => __('No events found.', 'event-interactive-map'),
+            'allDays'           => __('All', 'event-interactive-map'),
+            'viewDetails'       => __('View Details', 'event-interactive-map'),
+            'locateMe'          => __('Locate Me', 'event-interactive-map'),
             'searchPlaceholder' => __('Search location...', 'event-interactive-map'),
-            'geolocationError' => __('Unable to get your location', 'event-interactive-map'),
+            'geolocationError'  => __('Unable to get your location', 'event-interactive-map'),
         ],
         'types' => [
             'concert' => __('Concert', 'event-interactive-map'),
@@ -96,10 +97,11 @@ add_action('admin_enqueue_scripts', 'eim_enqueue_admin_scripts');
  */
 function eim_shortcode_map($atts) {
     $atts = shortcode_atts([
-        'height' => '500px',
-        'zoom' => '13',
+        'height'     => '500px',
+        'zoom'       => '13',
         'center_lat' => '',
         'center_lng' => '',
+        'group'      => '',   // map_set slug, e.g. "sbaf-2026"
     ], $atts);
 
     ob_start();

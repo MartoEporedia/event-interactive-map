@@ -32,6 +32,27 @@ function eim_register_poi_cpt() {
 add_action('init', 'eim_register_poi_cpt');
 
 /**
+ * Register map_set taxonomy for grouping POIs into separate maps
+ */
+function eim_register_map_set_taxonomy() {
+    register_taxonomy('map_set', 'event_poi', [
+        'labels' => [
+            'name'          => __('Map Sets', 'event-interactive-map'),
+            'singular_name' => __('Map Set', 'event-interactive-map'),
+            'add_new_item'  => __('Add New Map Set', 'event-interactive-map'),
+            'edit_item'     => __('Edit Map Set', 'event-interactive-map'),
+        ],
+        'public'            => false,
+        'show_ui'           => true,
+        'show_in_rest'      => true,
+        'show_admin_column' => true,
+        'hierarchical'      => false,
+        'rewrite'           => false,
+    ]);
+}
+add_action('init', 'eim_register_map_set_taxonomy');
+
+/**
  * Add meta box for POI details
  */
 function eim_add_poi_meta_box() {
@@ -239,6 +260,30 @@ function eim_save_poi_meta($post_id) {
     }
 }
 add_action('save_post_event_poi', 'eim_save_poi_meta');
+
+/**
+ * Register meta fields as REST-accessible so the WP REST API can read/write them
+ */
+function eim_register_post_meta() {
+    $string_fields = ['lat', 'lng', 'event_type', 'event_date', 'event_time', 'event_address'];
+    foreach ($string_fields as $field) {
+        register_post_meta('event_poi', $field, [
+            'show_in_rest'  => true,
+            'single'        => true,
+            'type'          => 'string',
+            'auth_callback' => function() { return current_user_can('edit_posts'); },
+        ]);
+    }
+    // program is stored as a JSON string
+    register_post_meta('event_poi', 'program', [
+        'show_in_rest'  => true,
+        'single'        => true,
+        'type'          => 'string',
+        'default'       => '[]',
+        'auth_callback' => function() { return current_user_can('edit_posts'); },
+    ]);
+}
+add_action('init', 'eim_register_post_meta');
 
 /**
  * Add admin notices for required fields

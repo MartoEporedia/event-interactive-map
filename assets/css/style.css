@@ -49,15 +49,36 @@
     font-size: 14px;
 }
 
-#eim-type-filter {
-    flex: 1;
-    padding: 8px 12px;
+/* Day filter buttons */
+.eim-day-filter-group {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.eim-day-btn {
+    padding: 7px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
     background: white;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
+
+.eim-day-btn:hover { background: #f5f5f5; }
+
+.eim-day-btn.active,
+.eim-day-btn.active:hover { color: white; border-color: transparent; }
+
+.eim-day-btn[data-day=""].active    { background: #555; }
+.eim-day-btn.eim-day-color-0.active { background: #9b59b6; }
+.eim-day-btn.eim-day-color-1.active { background: #e67e22; }
+.eim-day-btn.eim-day-color-2.active { background: #27ae60; }
+.eim-day-btn.eim-day-color-3.active { background: #3498db; }
+.eim-day-btn.eim-day-color-4.active { background: #e74c3c; }
 
 .eim-btn {
     padding: 8px 12px;
@@ -312,6 +333,52 @@
     height: 16px;
     font-size: 16px;
 }
+
+/* Stage marker */
+.eim-marker-stage { border-color: #e67e22; background: #fae5d3; }
+.eim-marker-stage .dashicons { color: #e67e22; }
+
+/* Program popup */
+.eim-popup-program { margin: 8px 0 4px; }
+
+.eim-popup-day-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin: 8px 0 4px;
+    display: inline-block;
+}
+
+.eim-popup-day-header.eim-day-color-0 { background: #9b59b6; }
+.eim-popup-day-header.eim-day-color-1 { background: #e67e22; }
+.eim-popup-day-header.eim-day-color-2 { background: #27ae60; }
+.eim-popup-day-header.eim-day-color-3 { background: #3498db; }
+.eim-popup-day-header.eim-day-color-4 { background: #e74c3c; }
+
+.eim-slot {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.eim-slot:last-child { border-bottom: none; }
+
+.eim-slot-time {
+    color: #888;
+    font-size: 12px;
+    min-width: 42px;
+    white-space: nowrap;
+}
+
+.eim-slot-band a { color: #0073aa; text-decoration: none; font-weight: 500; }
+.eim-slot-band a:hover { text-decoration: underline; }
+
+.eim-popup-empty { color: #999; font-size: 13px; margin: 8px 0 0; }
 
 /* Loading State */
 .eim-loading {

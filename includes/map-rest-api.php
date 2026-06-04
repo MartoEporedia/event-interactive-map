@@ -3,25 +3,31 @@
  * REST API endpoint for retrieving POIs
  */
 function eim_get_pois_callback($request) {
-    $type = $request->get_param('type');
+    $type    = $request->get_param('type');
+    $map_set = $request->get_param('map_set');
 
     $args = [
-        'post_type' => 'event_poi',
+        'post_type'   => 'event_poi',
         'numberposts' => -1,
         'post_status' => 'publish',
-        'orderby' => 'date',
-        'order' => 'DESC'
+        'orderby'     => 'date',
+        'order'       => 'DESC',
     ];
 
-    // Filter by type if provided
     if (!empty($type)) {
-        $args['meta_query'] = [
-            [
-                'key' => 'event_type',
-                'value' => sanitize_text_field($type),
-                'compare' => '='
-            ]
-        ];
+        $args['meta_query'] = [[
+            'key'     => 'event_type',
+            'value'   => sanitize_text_field($type),
+            'compare' => '=',
+        ]];
+    }
+
+    if (!empty($map_set)) {
+        $args['tax_query'] = [[
+            'taxonomy' => 'map_set',
+            'field'    => 'slug',
+            'terms'    => sanitize_title($map_set),
+        ]];
     }
 
     $posts = get_posts($args);
@@ -33,21 +39,37 @@ function eim_get_pois_callback($request) {
 
         // Only include POIs with valid coordinates
         if (!empty($lat) && !empty($lng) && is_numeric($lat) && is_numeric($lng)) {
-            $event_date = get_post_meta($post->ID, 'event_date', true);
-            $event_time = get_post_meta($post->ID, 'event_time', true);
-            $event_type = get_post_meta($post->ID, 'event_type', true);
+            $event_date    = get_post_meta($post->ID, 'event_date', true);
+            $event_time    = get_post_meta($post->ID, 'event_time', true);
+            $event_type    = get_post_meta($post->ID, 'event_type', true);
+            $program_raw   = get_post_meta($post->ID, 'program', true);
+            $program       = $program_raw ? json_decode($program_raw, true) : [];
+
+            // filter by day if requested
+            $day = $request->get_param('day');
+            if (!empty($day) && is_array($program)) {
+                $has_day = false;
+                foreach ($program as $slot) {
+                    if (isset($slot['day']) && mb_strtolower($slot['day']) === mb_strtolower($day)) {
+                        $has_day = true;
+                        break;
+                    }
+                }
+                if (!$has_day) continue;
+            }
 
             $pois[] = [
-                'id' => absint($post->ID),
-                'title' => sanitize_text_field(get_the_title($post)),
-                'content' => wp_kses_post($post->post_content),
-                'excerpt' => wp_kses_post(get_the_excerpt($post)),
-                'lat' => floatval($lat),
-                'lng' => floatval($lng),
-                'type' => sanitize_text_field($event_type),
-                'date' => sanitize_text_field($event_date),
-                'time' => sanitize_text_field($event_time),
-                'permalink' => esc_url(get_permalink($post))
+                'id'        => absint($post->ID),
+                'title'     => sanitize_text_field(get_the_title($post)),
+                'content'   => wp_kses_post($post->post_content),
+                'excerpt'   => wp_kses_post(get_the_excerpt($post)),
+                'lat'       => floatval($lat),
+                'lng'       => floatval($lng),
+                'type'      => sanitize_text_field($event_type),
+                'date'      => sanitize_text_field($event_date),
+                'time'      => sanitize_text_field($event_time),
+                'program'   => is_array($program) ? $program : [],
+                'permalink' => esc_url(get_permalink($post)),
             ];
         }
     }
@@ -69,13 +91,23 @@ function eim_get_pois_permissions() {
 function eim_get_pois_args() {
     return [
         'type' => [
-            'description' => __('Filter by event type', 'event-interactive-map'),
-            'type' => 'string',
+            'description'       => __('Filter by event type', 'event-interactive-map'),
+            'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
-            'validate_callback' => function($param, $request, $key) {
-                return is_string($param);
-            }
-        ]
+            'validate_callback' => fn($p) => is_string($p),
+        ],
+        'day' => [
+            'description'       => __('Filter by festival day (Venerdì, Sabato, Domenica)', 'event-interactive-map'),
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'validate_callback' => fn($p) => is_string($p),
+        ],
+        'map_set' => [
+            'description'       => __('Filter by map set slug', 'event-interactive-map'),
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_title',
+            'validate_callback' => fn($p) => is_string($p),
+        ],
     ];
 }
 
