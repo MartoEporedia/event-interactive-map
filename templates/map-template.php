@@ -1,7 +1,7 @@
 <div class="eim-map-container" style="height: <?php echo esc_attr($atts['height']); ?>;">
     <div class="eim-map-controls">
         <div class="eim-control-group">
-            <input type="text" id="eim-search-input" placeholder="<?php echo esc_attr__('Search location...', 'event-interactive-map'); ?>" />
+            <input type="text" id="eim-search-input" placeholder="<?php echo esc_attr__('Search artist...', 'event-interactive-map'); ?>" />
             <button id="eim-search-btn" class="eim-btn" title="<?php esc_attr_e('Search', 'event-interactive-map'); ?>">
                 <span class="dashicons dashicons-search"></span>
             </button>
