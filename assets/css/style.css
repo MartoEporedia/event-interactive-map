@@ -107,19 +107,24 @@
 .eim-day-filter-group {
     display: flex;
     gap: 4px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
+.eim-day-filter-group::-webkit-scrollbar { display: none; }
+
 .eim-day-btn {
-    padding: 7px 12px;
+    padding: 7px 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     background: white;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .eim-day-btn:hover { background: #f5f5f5; }
