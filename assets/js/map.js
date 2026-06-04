@@ -7,6 +7,8 @@
     let allPois = [];
     let userMarker = null;
     let activeDay = '';
+    let poiMarkers = {};  // poi.id → marker
+    let bandIndex  = [];  // [{band, day, time, poi}]
 
     const stageIcon = L.divIcon({
         className: 'eim-marker eim-marker-stage',
@@ -66,6 +68,7 @@
             hideLoading();
             allPois = data;
             buildDayFilter(allPois);
+            buildBandIndex(allPois);
             filterAndDisplay(activeDay);
         })
         .catch(() => {
@@ -74,19 +77,108 @@
         });
     }
 
+    // ── Band index ────────────────────────────────────────────────────────────
+
+    function buildBandIndex(pois) {
+        bandIndex = [];
+        pois.forEach(poi => {
+            (poi.program || []).forEach(slot => {
+                if (slot.band) bandIndex.push({ band: slot.band, day: slot.day, time: slot.time, poi });
+            });
+        });
+    }
+
+    function searchBands(query) {
+        const q = query.toLowerCase().trim();
+        if (!q) return [];
+        return bandIndex.filter(item => item.band.toLowerCase().includes(q)).slice(0, 8);
+    }
+
+    function focusBand(item) {
+        closeAutocomplete();
+        $('#eim-search-input').val(item.band);
+
+        const marker = poiMarkers[item.poi.id];
+        if (!marker) return;
+
+        markerCluster.zoomToShowLayer(marker, () => {
+            marker.openPopup();
+        });
+    }
+
+    // ── Autocomplete UI ───────────────────────────────────────────────────────
+
+    function showAutocomplete(results) {
+        let $ac = $('#eim-autocomplete');
+        if (!$ac.length) {
+            $ac = $('<div id="eim-autocomplete" class="eim-autocomplete"></div>');
+            $('#eim-search-input').closest('.eim-control-group').append($ac);
+        }
+
+        if (!results.length) { $ac.hide(); return; }
+
+        $ac.empty();
+        results.forEach(item => {
+            const dayMeta = DAY_COLORS[dayColorMap[item.day]] || '';
+            const time    = item.time ? `<span class="eim-ac-time">${escapeHtml(item.time)}</span>` : '';
+            const $item   = $(`
+                <div class="eim-ac-item">
+                    <span class="eim-ac-band">${escapeHtml(item.band)}</span>
+                    <span class="eim-ac-venue">${escapeHtml(item.poi.title)}</span>
+                    ${time}
+                </div>`);
+            $item.on('mousedown', () => focusBand(item));
+            $ac.append($item);
+        });
+        $ac.show();
+    }
+
+    function closeAutocomplete() {
+        $('#eim-autocomplete').hide().empty();
+    }
+
+    // ── Day filter ────────────────────────────────────────────────────────────
+
+    const DAY_COLORS = ['eim-day-color-0', 'eim-day-color-1', 'eim-day-color-2', 'eim-day-color-3', 'eim-day-color-4'];
+    let dayColorMap = {};
+
+    function buildDayFilter(pois) {
+        const days = [];
+        pois.forEach(poi => {
+            (poi.program || []).forEach(slot => {
+                if (slot.day && !days.includes(slot.day)) days.push(slot.day);
+            });
+        });
+
+        const $container = $('#eim-day-filter');
+        $container.empty();
+        if (days.length === 0) { $container.hide(); return; }
+
+        dayColorMap = {};
+        days.forEach((day, i) => { dayColorMap[day] = i % DAY_COLORS.length; });
+
+        $container.append(`<button class="eim-day-btn active" data-day="">${eimData.strings.allDays || 'All'}</button>`);
+        days.forEach(day => {
+            const cls = DAY_COLORS[dayColorMap[day]];
+            $container.append(`<button class="eim-day-btn ${cls}" data-day="${escapeHtml(day)}">${escapeHtml(day)}</button>`);
+        });
+        $container.show();
+    }
+
+    // ── Display ───────────────────────────────────────────────────────────────
+
     function filterAndDisplay(day) {
         const filtered = day
             ? allPois.filter(poi =>
-                Array.isArray(poi.program) &&
-                poi.program.some(slot => slot.day === day)
-              )
+                Array.isArray(poi.program) && poi.program.some(slot => slot.day === day))
             : allPois;
         displayPois(filtered, day);
     }
 
     function displayPois(pois, day) {
         markerCluster.clearLayers();
-        markers = [];
+        markers    = [];
+        poiMarkers = {};
 
         if (!pois || pois.length === 0) return;
 
@@ -103,6 +195,7 @@
 
             markerCluster.addLayer(marker);
             markers.push(marker);
+            poiMarkers[poi.id] = marker;
             bounds.extend([poi.lat, poi.lng]);
         });
 
@@ -113,48 +206,13 @@
         }
     }
 
-    // Colour palette for day buttons (cycles for N days)
-    const DAY_COLORS = ['eim-day-color-0', 'eim-day-color-1', 'eim-day-color-2', 'eim-day-color-3', 'eim-day-color-4'];
-    let dayColorMap = {}; // day label → CSS color class
-
-    function buildDayFilter(pois) {
-        const days = [];
-        pois.forEach(poi => {
-            (poi.program || []).forEach(slot => {
-                if (slot.day && !days.includes(slot.day)) days.push(slot.day);
-            });
-        });
-
-        const $container = $('#eim-day-filter');
-        $container.empty();
-
-        if (days.length === 0) { $container.hide(); return; }
-
-        dayColorMap = {};
-        days.forEach((day, i) => { dayColorMap[day] = DAY_COLORS[i % DAY_COLORS.length]; });
-
-        const $all = $(`<button class="eim-day-btn active" data-day="">${eimData.strings.allDays || 'All'}</button>`);
-        $container.append($all);
-
-        days.forEach(day => {
-            const cls = dayColorMap[day];
-            $container.append(`<button class="eim-day-btn ${cls}" data-day="${escapeHtml(day)}">${escapeHtml(day)}</button>`);
-        });
-
-        $container.show();
-    }
-
     function createPopupContent(poi, filterDay) {
-        let html = `<div class="eim-popup-content">`;
-        html += `<h3>${escapeHtml(poi.title)}</h3>`;
+        let html = `<div class="eim-popup-content"><h3>${escapeHtml(poi.title)}</h3>`;
 
         const program = Array.isArray(poi.program) ? poi.program : [];
-        const slots = filterDay
-            ? program.filter(s => s.day === filterDay)
-            : program;
+        const slots   = filterDay ? program.filter(s => s.day === filterDay) : program;
 
         if (slots.length > 0) {
-            // group by day
             const byDay = {};
             slots.forEach(s => {
                 const d = s.day || 'N/D';
@@ -164,7 +222,7 @@
 
             html += `<div class="eim-popup-program">`;
             Object.entries(byDay).forEach(([day, daySlots]) => {
-                const colorCls = dayColorMap[day] || 'eim-day-color-0';
+                const colorCls = DAY_COLORS[dayColorMap[day]] || 'eim-day-color-0';
                 html += `<div class="eim-popup-day-header ${colorCls}">${escapeHtml(day)}</div>`;
                 daySlots.forEach(slot => {
                     const time = slot.time ? `<span class="eim-slot-time">${escapeHtml(slot.time)}</span>` : '';
@@ -183,8 +241,10 @@
         return html;
     }
 
+    // ── Event listeners ───────────────────────────────────────────────────────
+
     function setupEventListeners() {
-        // day filter buttons
+        // day filter
         $(document).on('click', '.eim-day-btn', function() {
             $('.eim-day-btn').removeClass('active');
             $(this).addClass('active');
@@ -192,11 +252,25 @@
             filterAndDisplay(activeDay);
         });
 
-        // location search
-        $('#eim-search-btn').on('click', performSearch);
-        $('#eim-search-input').on('keypress', function(e) {
-            if (e.which === 13) performSearch();
+        // band autocomplete
+        $('#eim-search-input').on('input', function() {
+            const q = $(this).val().trim();
+            if (q.length < 2) { closeAutocomplete(); return; }
+            showAutocomplete(searchBands(q));
         });
+
+        $('#eim-search-input').on('blur', () => setTimeout(closeAutocomplete, 150));
+        $('#eim-search-input').on('keydown', function(e) {
+            if (e.key === 'Escape') closeAutocomplete();
+            if (e.key === 'Enter') {
+                const first = bandIndex.find(item =>
+                    item.band.toLowerCase().includes($(this).val().toLowerCase().trim()));
+                if (first) { focusBand(first); e.preventDefault(); }
+            }
+        });
+
+        // location search button (Nominatim fallback)
+        $('#eim-search-btn').on('click', performSearch);
 
         $('#eim-locate-btn').on('click', geolocateUser);
         $('#eim-reset-btn').on('click', resetView);
@@ -205,19 +279,23 @@
         $(window).on('resize', () => { if (map) map.invalidateSize(); });
     }
 
+    // ── Location search (Nominatim) ───────────────────────────────────────────
+
     function performSearch() {
         const query = $('#eim-search-input').val().trim();
         if (!query) return;
 
-        $('#eim-search-btn').prop('disabled', true).addClass('loading');
+        // se corrisponde a una band, usa l'indice locale
+        const match = bandIndex.find(item => item.band.toLowerCase() === query.toLowerCase());
+        if (match) { focusBand(match); return; }
 
+        $('#eim-search-btn').prop('disabled', true).addClass('loading');
         $.ajax({
             url: 'https://nominatim.openstreetmap.org/search',
             data: { q: query, format: 'json', limit: 1 },
             success(data) {
                 if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lng = parseFloat(data[0].lon);
+                    const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
                     map.setView([lat, lng], 16);
                     if (userMarker) map.removeLayer(userMarker);
                     userMarker = L.marker([lat, lng], {
@@ -229,9 +307,7 @@
                     }).addTo(map);
                 }
             },
-            complete() {
-                $('#eim-search-btn').prop('disabled', false).removeClass('loading');
-            }
+            complete() { $('#eim-search-btn').prop('disabled', false).removeClass('loading'); }
         });
     }
 
@@ -259,6 +335,7 @@
 
     function resetView() {
         if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+        closeAutocomplete();
         if (markers.length > 0) {
             const bounds = L.latLngBounds();
             markers.forEach(m => bounds.extend(m.getLatLng()));
@@ -272,7 +349,8 @@
     function hideError()   { $('#eim-error').hide(); }
 
     function escapeHtml(text) {
-        return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+        return String(text).replace(/[&<>"']/g, m =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
     $(document).ready(initMap);

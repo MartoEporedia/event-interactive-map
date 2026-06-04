@@ -111,11 +111,77 @@ function eim_get_pois_args() {
     ];
 }
 
+/**
+ * POST /eim/v1/pois — create or update a POI by title
+ */
+function eim_upsert_poi_callback($request) {
+    $title   = sanitize_text_field($request->get_param('title'));
+    $lat     = sanitize_text_field($request->get_param('lat'));
+    $lng     = sanitize_text_field($request->get_param('lng'));
+    $type    = sanitize_text_field($request->get_param('event_type') ?: 'concert');
+    $address = sanitize_text_field($request->get_param('event_address'));
+    $program = $request->get_param('program') ?: '[]';
+    $map_set = sanitize_title($request->get_param('map_set'));
+
+    if (empty($title) || empty($lat) || empty($lng)) {
+        return new WP_Error('missing_fields', 'title, lat and lng are required', ['status' => 400]);
+    }
+
+    // find existing post by title
+    $existing = get_posts([
+        'post_type'   => 'event_poi',
+        'post_status' => 'publish',
+        'title'       => $title,
+        'numberposts' => 1,
+    ]);
+
+    $post_data = [
+        'post_title'   => $title,
+        'post_status'  => 'publish',
+        'post_type'    => 'event_poi',
+        'post_content' => '',
+    ];
+
+    if ($existing) {
+        $post_data['ID'] = $existing[0]->ID;
+        $post_id = wp_update_post($post_data, true);
+    } else {
+        $post_id = wp_insert_post($post_data, true);
+    }
+
+    if (is_wp_error($post_id)) {
+        return $post_id;
+    }
+
+    update_post_meta($post_id, 'lat',           $lat);
+    update_post_meta($post_id, 'lng',           $lng);
+    update_post_meta($post_id, 'event_type',    $type);
+    update_post_meta($post_id, 'event_address', $address);
+    update_post_meta($post_id, 'program',       $program);
+
+    if (!empty($map_set)) {
+        wp_set_post_terms($post_id, [$map_set], 'map_set');
+    }
+
+    return rest_ensure_response([
+        'id'      => $post_id,
+        'title'   => $title,
+        'updated' => !empty($existing),
+    ]);
+}
+
 add_action('rest_api_init', function() {
     register_rest_route('eim/v1', '/pois', [
-        'methods' => 'GET',
-        'callback' => 'eim_get_pois_callback',
-        'permission_callback' => 'eim_get_pois_permissions',
-        'args' => eim_get_pois_args()
+        [
+            'methods'             => 'GET',
+            'callback'            => 'eim_get_pois_callback',
+            'permission_callback' => 'eim_get_pois_permissions',
+            'args'                => eim_get_pois_args(),
+        ],
+        [
+            'methods'             => 'POST',
+            'callback'            => 'eim_upsert_poi_callback',
+            'permission_callback' => function() { return current_user_can('edit_posts'); },
+        ],
     ]);
 });
