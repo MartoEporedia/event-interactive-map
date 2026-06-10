@@ -120,7 +120,10 @@ function eim_upsert_poi_callback($request) {
     $lng     = sanitize_text_field($request->get_param('lng'));
     $type    = sanitize_text_field($request->get_param('event_type') ?: 'concert');
     $address = sanitize_text_field($request->get_param('event_address'));
+    $date    = sanitize_text_field($request->get_param('event_date') ?: '');
+    $time    = sanitize_text_field($request->get_param('event_time') ?: '');
     $program = $request->get_param('program') ?: '[]';
+    $content = wp_kses_post($request->get_param('content') ?: '');
     $map_set = sanitize_title($request->get_param('map_set'));
 
     if (empty($title) || empty($lat) || empty($lng)) {
@@ -139,7 +142,7 @@ function eim_upsert_poi_callback($request) {
         'post_title'   => $title,
         'post_status'  => 'publish',
         'post_type'    => 'event_poi',
-        'post_content' => '',
+        'post_content' => $content,
     ];
 
     if ($existing) {
@@ -157,6 +160,8 @@ function eim_upsert_poi_callback($request) {
     update_post_meta($post_id, 'lng',           $lng);
     update_post_meta($post_id, 'event_type',    $type);
     update_post_meta($post_id, 'event_address', $address);
+    update_post_meta($post_id, 'event_date',    $date);
+    update_post_meta($post_id, 'event_time',    $time);
     update_post_meta($post_id, 'program',       $program);
 
     if (!empty($map_set)) {

@@ -153,6 +153,102 @@ function eim_poi_meta_box_callback($post) {
             </div>
             <div id="eim-admin-map"></div>
         </div>
+
+        <?php
+        $program_raw = get_post_meta($post->ID, 'program', true);
+        $program = ($program_raw) ? json_decode($program_raw, true) : [];
+        if (!is_array($program)) $program = [];
+        ?>
+        <div class="eim-field" style="margin-top:28px;border-top:1px solid #ddd;padding-top:20px;">
+            <label style="font-size:14px;font-weight:700;margin-bottom:12px;display:block;">
+                📅 <?php _e('Programma / Schedule', 'event-interactive-map'); ?>
+            </label>
+            <p style="color:#666;font-size:12px;margin:-8px 0 12px;">
+                <?php _e('Ogni riga è uno slot del programma (artista, giorno, ora, link). Salvare per confermare.', 'event-interactive-map'); ?>
+            </p>
+            <div id="eim-program-slots"></div>
+            <button type="button" id="eim-add-slot" class="button button-secondary" style="margin-top:6px;">
+                + <?php _e('Aggiungi slot', 'event-interactive-map'); ?>
+            </button>
+            <input type="hidden" name="eim_program_json" id="eim_program_json"
+                   value="<?php echo esc_attr(wp_json_encode($program)); ?>">
+        </div>
+
+        <style>
+            .eim-program-row { display:grid; grid-template-columns:110px 105px 72px 1fr 1fr 165px 34px; gap:5px; align-items:end; margin-bottom:8px; padding:9px 10px; background:#f9f9f9; border:1px solid #ddd; border-radius:4px; }
+            .eim-program-row label { font-size:11px; font-weight:600; display:block; margin-bottom:3px; color:#444; }
+            .eim-program-row input, .eim-program-row select { width:100% !important; max-width:none !important; }
+            .eim-remove-slot { color:#a00 !important; padding:0 7px !important; font-size:15px !important; }
+        </style>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var DAYS  = ['Venerdì','Sabato','Domenica'];
+            var slots = <?php echo wp_json_encode($program); ?>;
+
+            function esc(s) { return $('<div>').text(s || '').html(); }
+
+            function renderSlots() {
+                var $c = $('#eim-program-slots');
+                $c.empty();
+                if (!slots.length) {
+                    $c.append('<p style="color:#888;font-style:italic;margin:0 0 8px;">Nessuno slot. Clicca "Aggiungi slot" per iniziare.</p>');
+                    return;
+                }
+                slots.forEach(function(slot, idx) {
+                    var dayOpts = DAYS.map(function(d) {
+                        return '<option value="'+d+'"'+(slot.day===d?' selected':'')+'>'+d+'</option>';
+                    }).join('');
+                    var row = $('<div class="eim-program-row" data-idx="'+idx+'">'
+                        +'<div><label>Giorno</label><select class="eim-slot-day">'+dayOpts+'</select></div>'
+                        +'<div><label>Data</label><input type="date" class="eim-slot-date" value="'+esc(slot.date)+'"></div>'
+                        +'<div><label>Ora</label><input type="time" class="eim-slot-time" value="'+esc(slot.time)+'"></div>'
+                        +'<div><label>Artista / Evento</label><input type="text" class="eim-slot-band" value="'+esc(slot.band)+'" placeholder="Nome artista"></div>'
+                        +'<div><label>Link</label><input type="text" class="eim-slot-link" value="'+esc(slot.link)+'" placeholder="https://..."></div>'
+                        +'<div><label>Note (opz.)</label><input type="text" class="eim-slot-note" value="'+esc(slot.note)+'" placeholder="es. 3 band in gara"></div>'
+                        +'<div><button type="button" class="button eim-remove-slot" title="Rimuovi">✕</button></div>'
+                        +'</div>');
+                    $c.append(row);
+                });
+            }
+
+            function collectSlots() {
+                slots = [];
+                $('#eim-program-slots .eim-program-row').each(function() {
+                    var $r = $(this);
+                    var band = $r.find('.eim-slot-band').val();
+                    if (!band.trim()) return; // skip empty rows
+                    slots.push({
+                        band: band,
+                        day:  $r.find('.eim-slot-day').val(),
+                        date: $r.find('.eim-slot-date').val(),
+                        time: $r.find('.eim-slot-time').val(),
+                        link: $r.find('.eim-slot-link').val(),
+                        note: $r.find('.eim-slot-note').val(),
+                    });
+                });
+                $('#eim_program_json').val(JSON.stringify(slots));
+            }
+
+            $('#eim-add-slot').on('click', function() {
+                collectSlots();
+                slots.push({band:'', day:'Venerdì', date:'', time:'', link:'', note:''});
+                renderSlots();
+            });
+
+            $(document).on('click', '.eim-remove-slot', function() {
+                collectSlots();
+                var idx = $(this).closest('.eim-program-row').data('idx');
+                slots.splice(idx, 1);
+                renderSlots();
+                $('#eim_program_json').val(JSON.stringify(slots));
+            });
+
+            $('#post').on('submit', function() { collectSlots(); });
+
+            renderSlots();
+        });
+        </script>
     </div>
 
     <script>
@@ -250,12 +346,34 @@ function eim_save_poi_meta($post_id) {
         return;
     }
 
-    // Save fields
+    // Save scalar fields
     $fields = ['lat', 'lng', 'event_type', 'event_date', 'event_time', 'event_address'];
-
     foreach ($fields as $field) {
         if (isset($_POST[$field])) {
             update_post_meta($post_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+
+    // Save program (JSON repeater)
+    if (isset($_POST['eim_program_json'])) {
+        $raw     = wp_unslash($_POST['eim_program_json']);
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $clean = [];
+            foreach ($decoded as $slot) {
+                $band = sanitize_text_field($slot['band'] ?? '');
+                if ($band === '') continue;
+                $clean[] = [
+                    'band' => $band,
+                    'day'  => sanitize_text_field($slot['day']  ?? ''),
+                    'date' => sanitize_text_field($slot['date'] ?? ''),
+                    'time' => sanitize_text_field($slot['time'] ?? ''),
+                    'link' => esc_url_raw($slot['link']         ?? ''),
+                    'note' => sanitize_text_field($slot['note'] ?? ''),
+                ];
+            }
+            usort($clean, fn($a, $b) => strcmp($a['date'] . $a['time'], $b['date'] . $b['time']));
+            update_post_meta($post_id, 'program', wp_json_encode($clean, JSON_UNESCAPED_UNICODE));
         }
     }
 }
