@@ -18,6 +18,11 @@
     transition: opacity 0.3s ease;
 }
 
+/* Wrapper: rende i controlli absolute su desktop */
+.eim-wrapper {
+    position: relative;
+}
+
 /* Map Controls */
 .eim-map-controls {
     position: absolute;
@@ -513,15 +518,35 @@
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
+    /* Su mobile i controlli escono dall'overlay e si posizionano sopra la mappa */
     .eim-map-controls {
-        flex-direction: column;
-        top: 5px;
-        left: 5px;
-        right: 5px;
+        position: static;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         padding: 8px;
+        gap: 6px;
+        /* flex-direction rimane row (default): search|locate|reset su riga 1 */
     }
 
+    /* La mappa prende bordi inferiori arrotondati (si attacca ai controlli) */
+    .eim-map-container {
+        border-radius: 0 0 8px 8px;
+    }
+
+    /* Search group si espande, locate/reset restano compatti */
     .eim-control-group {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #eim-locate-btn,
+    #eim-reset-btn {
+        flex: 0 0 auto;
+    }
+
+    /* Filtri giorno: seconda riga a tutta larghezza */
+    #eim-day-filter {
+        flex-basis: 100%;
         min-width: 100%;
     }
 
@@ -550,18 +575,13 @@
 }
 
 @media screen and (max-width: 480px) {
-    .eim-map-controls {
-        gap: 8px;
-    }
-
-    #eim-search-input,
-    #eim-type-filter {
+    #eim-search-input {
         font-size: 13px;
         padding: 7px 10px;
     }
 
     .eim-btn {
-        padding: 7px 10px;
+        padding: 7px 8px;
     }
 
     #event-map {
