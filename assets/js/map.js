@@ -276,6 +276,14 @@
         $('#eim-reset-btn').on('click', resetView);
         $('#eim-retry-btn').on('click', loadPois);
 
+        // Toggle collasso filtri su mobile
+        $('.eim-controls-header').on('click', function() {
+            const $controls = $('.eim-map-controls');
+            const collapsed = $controls.toggleClass('eim-collapsed').hasClass('eim-collapsed');
+            $('#eim-toggle-controls').attr('aria-expanded', String(!collapsed));
+            if (!collapsed && map) setTimeout(() => map.invalidateSize(), 270);
+        });
+
         $(window).on('resize', () => { if (map) map.invalidateSize(); });
     }
 

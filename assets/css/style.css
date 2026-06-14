@@ -516,21 +516,88 @@
     font-weight: 600;
 }
 
+/* Header toggle: nascosto su desktop, visibile su mobile */
+.eim-controls-header {
+    display: none;
+}
+
+/* Su desktop il body dei controlli si comporta come se non ci fosse */
+.eim-controls-body {
+    display: contents;
+}
+
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    /* Su mobile i controlli escono dall'overlay e si posizionano sopra la mappa */
+    /* Controlli: sticky in cima, non più overlay */
     .eim-map-controls {
-        position: static;
+        position: sticky;
+        top: 0;
+        z-index: 500;
         border-radius: 8px 8px 0 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         padding: 8px;
-        gap: 6px;
-        /* flex-direction rimane row (default): search|locate|reset su riga 1 */
+        gap: 0;
+        flex-direction: column;
     }
 
-    /* La mappa prende bordi inferiori arrotondati (si attacca ai controlli) */
     .eim-map-container {
         border-radius: 0 0 8px 8px;
+    }
+
+    /* Header toggle */
+    .eim-controls-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 2px 4px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .eim-controls-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+    }
+
+    .eim-toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px 4px;
+        line-height: 1;
+        color: #555;
+        transition: transform 0.2s ease;
+    }
+
+    .eim-toggle-btn .dashicons {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+        display: block;
+        transition: transform 0.2s ease;
+    }
+
+    /* Corpo dei filtri: animazione collasso */
+    .eim-controls-body {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        overflow: hidden;
+        max-height: 120px;
+        opacity: 1;
+        padding-top: 6px;
+        transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.2s ease;
+    }
+
+    .eim-map-controls.eim-collapsed .eim-controls-body {
+        max-height: 0;
+        opacity: 0;
+        padding-top: 0;
+    }
+
+    .eim-map-controls.eim-collapsed .eim-toggle-btn .dashicons {
+        transform: rotate(180deg);
     }
 
     /* Search group si espande, locate/reset restano compatti */
