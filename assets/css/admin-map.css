@@ -1,0 +1,144 @@
+/* Admin map meta box styles */
+
+#eim-admin-map {
+    height: 400px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.eim-admin-map-wrap {
+    position: relative;
+}
+
+#eim-no-coords-notice {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: rgba(0, 115, 170, 0.92);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    pointer-events: none;
+    text-align: center;
+    max-width: 260px;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.eim-location-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.eim-location-toolbar input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+#eim-geocode-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#eim-locate-me {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#eim-locate-me.eim-btn-loading::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #0073aa;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: eim-spin 0.6s linear infinite;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+@keyframes eim-spin {
+    to { transform: rotate(360deg); }
+}
+
+#eim-geocode-result {
+    display: none;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    position: relative;
+    z-index: 9999;
+}
+
+.eim-geocode-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.eim-geocode-list li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    line-height: 1.4;
+    color: #333;
+}
+
+.eim-geocode-list li:last-child {
+    border-bottom: none;
+}
+
+.eim-geocode-list li:hover {
+    background: #f0f6fc;
+    color: #0073aa;
+}
+
+.eim-geocode-msg {
+    margin: 0;
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+.eim-geocode-error {
+    color: #a00;
+}
+
+.eim-field-error {
+    border-color: #a00 !important;
+    box-shadow: 0 0 0 2px rgba(170, 0, 0, 0.15) !important;
+}
+
+.eim-coords-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.eim-coords-row .eim-field {
+    flex: 1;
+}
+
+.eim-map-hint {
+    font-size: 11px;
+    color: #666;
+    margin: 4px 0 0;
+    font-style: italic;
+}

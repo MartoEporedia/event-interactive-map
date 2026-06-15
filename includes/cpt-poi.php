@@ -117,8 +117,6 @@ function eim_poi_meta_box_callback($post) {
             .eim-field select { width: 100%; max-width: 400px; }
             .eim-field-group { display: flex; gap: 15px; }
             .eim-field-group .eim-field { flex: 1; }
-            #eim-admin-map { height: 400px; width: 100%; margin-top: 10px; border: 1px solid #ddd; }
-            .eim-map-instructions { background: #f0f6fc; padding: 10px; border-left: 4px solid #0073aa; margin-bottom: 10px; }
         </style>
 
         <div class="eim-field">
@@ -140,7 +138,6 @@ function eim_poi_meta_box_callback($post) {
                 <label for="event_date"><?php _e('Event Date', 'event-interactive-map'); ?></label>
                 <input type="date" name="event_date" id="event_date" value="<?php echo esc_attr($event_date); ?>">
             </div>
-
             <div class="eim-field">
                 <label for="event_time"><?php _e('Event Time', 'event-interactive-map'); ?></label>
                 <input type="time" name="event_time" id="event_time" value="<?php echo esc_attr($event_time); ?>">
@@ -148,34 +145,45 @@ function eim_poi_meta_box_callback($post) {
         </div>
 
         <div class="eim-field">
-            <label for="event_address"><?php _e('Address', 'event-interactive-map'); ?></label>
-            <input type="text" name="event_address" id="event_address" value="<?php echo esc_attr($event_address); ?>" placeholder="<?php _e('Enter address to search on map', 'event-interactive-map'); ?>">
-            <button type="button" id="eim-search-address" class="button"><?php _e('Search Address', 'event-interactive-map'); ?></button>
-        </div>
+            <label><?php _e('Location', 'event-interactive-map'); ?></label>
+            <p class="description" style="margin-bottom:8px;">
+                <?php _e('Search by address, use your current location, or click directly on the map.', 'event-interactive-map'); ?>
+            </p>
 
-        <div class="eim-field-group">
-            <div class="eim-field">
-                <label for="lat"><?php _e('Latitude', 'event-interactive-map'); ?></label>
-                <input type="number" step="any" name="lat" id="lat" value="<?php echo esc_attr($lat); ?>" placeholder="45.0" required>
+            <div class="eim-location-toolbar">
+                <input type="text" name="event_address" id="event_address"
+                       value="<?php echo esc_attr($event_address); ?>"
+                       placeholder="<?php esc_attr_e('Enter an address…', 'event-interactive-map'); ?>"
+                       style="max-width:none;">
+                <button type="button" id="eim-geocode-btn" class="button button-secondary">
+                    <?php _e('Search', 'event-interactive-map'); ?>
+                </button>
+                <button type="button" id="eim-locate-me" class="button button-secondary" title="<?php esc_attr_e('Use my current location', 'event-interactive-map'); ?>">
+                    &#x1F4CD; <?php _e('Locate me', 'event-interactive-map'); ?>
+                </button>
+            </div>
+            <div id="eim-geocode-result"></div>
+
+            <div class="eim-admin-map-wrap">
+                <div id="eim-admin-map"></div>
+                <div id="eim-no-coords-notice">
+                    <?php _e('Click on the map to place the marker', 'event-interactive-map'); ?>
+                </div>
             </div>
 
-            <div class="eim-field">
-                <label for="lng"><?php _e('Longitude', 'event-interactive-map'); ?></label>
-                <input type="number" step="any" name="lng" id="lng" value="<?php echo esc_attr($lng); ?>" placeholder="7.6" required>
+            <div class="eim-coords-row">
+                <div class="eim-field" style="margin-bottom:0">
+                    <label for="lat"><?php _e('Latitude', 'event-interactive-map'); ?></label>
+                    <input type="number" step="any" name="lat" id="lat"
+                           value="<?php echo esc_attr($lat); ?>" placeholder="45.000000">
+                </div>
+                <div class="eim-field" style="margin-bottom:0">
+                    <label for="lng"><?php _e('Longitude', 'event-interactive-map'); ?></label>
+                    <input type="number" step="any" name="lng" id="lng"
+                           value="<?php echo esc_attr($lng); ?>" placeholder="7.600000">
+                </div>
             </div>
-        </div>
-
-        <div class="eim-field">
-            <div class="eim-map-instructions">
-                <strong><?php _e('How to set location:', 'event-interactive-map'); ?></strong>
-                <ul style="margin: 5px 0 0 20px;">
-                    <li><?php _e('Search for an address using the field above', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Click on the map to set the exact location', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Drag the marker to adjust the position', 'event-interactive-map'); ?></li>
-                    <li><?php _e('Coordinates will update automatically', 'event-interactive-map'); ?></li>
-                </ul>
-            </div>
-            <div id="eim-admin-map"></div>
+            <p class="eim-map-hint"><?php _e('Drag the marker to fine-tune the position. Coordinates update automatically.', 'event-interactive-map'); ?></p>
         </div>
 
         <?php
@@ -278,79 +286,6 @@ function eim_poi_meta_box_callback($post) {
         </script>
     </div>
 
-    <script>
-    jQuery(document).ready(function($) {
-        // Initialize map
-        var defaultLat = <?php echo !empty($lat) ? floatval($lat) : 45.0; ?>;
-        var defaultLng = <?php echo !empty($lng) ? floatval($lng) : 7.6; ?>;
-
-        var map = L.map('eim-admin-map').setView([defaultLat, defaultLng], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        var marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-
-        // Update coordinates when marker is moved
-        function updateCoordinates(lat, lng) {
-            $('#lat').val(lat.toFixed(6));
-            $('#lng').val(lng.toFixed(6));
-        }
-
-        marker.on('dragend', function(e) {
-            var position = marker.getLatLng();
-            updateCoordinates(position.lat, position.lng);
-        });
-
-        // Click on map to set position
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            updateCoordinates(e.latlng.lat, e.latlng.lng);
-        });
-
-        // Update marker when coordinates are manually changed
-        $('#lat, #lng').on('change', function() {
-            var lat = parseFloat($('#lat').val());
-            var lng = parseFloat($('#lng').val());
-            if (!isNaN(lat) && !isNaN(lng)) {
-                marker.setLatLng([lat, lng]);
-                map.setView([lat, lng]);
-            }
-        });
-
-        // Address search using Nominatim
-        $('#eim-search-address').on('click', function() {
-            var address = $('#event_address').val();
-            if (!address) {
-                alert('<?php _e('Please enter an address', 'event-interactive-map'); ?>');
-                return;
-            }
-
-            $.ajax({
-                url: 'https://nominatim.openstreetmap.org/search',
-                data: {
-                    q: address,
-                    format: 'json',
-                    limit: 1
-                },
-                success: function(data) {
-                    if (data && data.length > 0) {
-                        var lat = parseFloat(data[0].lat);
-                        var lng = parseFloat(data[0].lon);
-                        marker.setLatLng([lat, lng]);
-                        map.setView([lat, lng], 15);
-                        updateCoordinates(lat, lng);
-                    } else {
-                        alert('<?php _e('Address not found', 'event-interactive-map'); ?>');
-                    }
-                },
-                error: function() {
-                    alert('<?php _e('Error searching address', 'event-interactive-map'); ?>');
-                }
-            });
-        });
-    });
-    </script>
     <?php
 }
 

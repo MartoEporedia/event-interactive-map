@@ -91,6 +91,22 @@ function eim_enqueue_admin_scripts($hook) {
     if (('post.php' === $hook || 'post-new.php' === $hook) && 'event_poi' === $post_type) {
         wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
         wp_enqueue_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', [], '1.9.4', true);
+
+        wp_enqueue_style('eim-admin-map-css', EIM_PLUGIN_URL . 'assets/css/admin-map.css', ['leaflet-css'], EIM_VERSION);
+        wp_enqueue_script('eim-admin-map', EIM_PLUGIN_URL . 'assets/js/admin-map.js', ['jquery', 'leaflet-js'], EIM_VERSION, true);
+
+        wp_localize_script('eim-admin-map', 'eimAdminData', [
+            'defaultLat' => get_option('eim_default_lat', '45.0'),
+            'defaultLng' => get_option('eim_default_lng', '7.6'),
+            'strings'    => [
+                'searching'       => __('Searching…',                          'event-interactive-map'),
+                'search'          => __('Search',                              'event-interactive-map'),
+                'notFound'        => __('Address not found',                   'event-interactive-map'),
+                'searchError'     => __('Search error, please try again',      'event-interactive-map'),
+                'geoNotSupported' => __('Geolocation not supported by browser','event-interactive-map'),
+                'geoError'        => __('Unable to get your location',         'event-interactive-map'),
+            ],
+        ]);
     }
 }
 add_action('admin_enqueue_scripts', 'eim_enqueue_admin_scripts');
