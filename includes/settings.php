@@ -10,10 +10,10 @@ add_action('admin_init', function() {
         'sanitize_callback' => 'wp_kses_post',
     ]);
 
-    add_settings_section('eim_markers', __('Marcatori mappa', 'event-interactive-map'),
-        function() { echo '<p>' . esc_html__('Icona usata per i POI senza categoria assegnata. Icona e colore delle categorie si impostano direttamente in POI → Categorie POI.', 'event-interactive-map') . '</p>'; },
+    add_settings_section('eim_markers', __('Map Markers', 'event-interactive-map'),
+        function() { echo '<p>' . esc_html__('Default icon used for POIs without an assigned category. Icon and colour per category are set directly in POI → POI Categories.', 'event-interactive-map') . '</p>'; },
         'eim_settings');
-    add_settings_field('eim_marker_icon', __('Icona predefinita', 'event-interactive-map'),
+    add_settings_field('eim_marker_icon', __('Default Icon', 'event-interactive-map'),
         'eim_marker_icon_field', 'eim_settings', 'eim_markers');
 });
 
@@ -21,24 +21,24 @@ function eim_marker_icon_field() {
     $val = get_option('eim_marker_icon', 'dashicons-tickets-alt');
 
     $presets = [
-        'dashicons-tickets-alt'  => 'Biglietto',
+        'dashicons-tickets-alt'  => 'Ticket',
         'dashicons-format-audio' => 'Audio',
-        'dashicons-megaphone'    => 'Megafono',
-        'dashicons-star-filled'  => 'Stella',
+        'dashicons-megaphone'    => 'Megaphone',
+        'dashicons-star-filled'  => 'Star',
         'dashicons-location'     => 'Pin',
-        'dashicons-businessman'  => 'Persona',
-        '🎸' => 'Chitarra',
-        '🎵' => 'Nota',
-        '🎤' => 'Microfono',
-        '🍺' => 'Birra',
-        '📍' => 'Segnalino',
+        'dashicons-businessman'  => 'Person',
+        '🎸' => 'Guitar',
+        '🎵' => 'Note',
+        '🎤' => 'Microphone',
+        '🍺' => 'Beer',
+        '📍' => 'Pin',
     ];
     ?>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
     <?php foreach ($presets as $icon => $label):
         $is_dash = str_starts_with($icon, 'dashicons-'); ?>
         <button type="button" class="button"
-            onclick="document.getElementById('eim_marker_icon').value=<?php echo json_encode($icon); ?>;eimIconPreview(<?php echo json_encode($icon); ?>)"
+            onclick="document.getElementById('eim_marker_icon').value=<?php echo esc_attr(json_encode($icon)); ?>;eimIconPreview(<?php echo esc_attr(json_encode($icon)); ?>)"
             style="display:flex;flex-direction:column;align-items:center;gap:4px;height:auto;padding:8px 12px;min-width:64px">
             <?php if ($is_dash): ?>
                 <span class="dashicons <?php echo esc_attr($icon); ?>" style="font-size:22px;width:22px;height:22px"></span>
@@ -55,12 +55,12 @@ function eim_marker_icon_field() {
             value="<?php echo esc_attr($val); ?>" class="regular-text"
             oninput="eimIconPreview(this.value)">
         <br><span class="description">
-            <?php _e('Classe Dashicon (es. <code>dashicons-tickets-alt</code>) oppure emoji/HTML personalizzato', 'event-interactive-map'); ?>
+            <?php _e('Dashicon class (e.g. <code>dashicons-tickets-alt</code>) or custom emoji / HTML', 'event-interactive-map'); ?>
         </span>
     </p>
 
     <p>
-        <strong><?php _e('Anteprima:', 'event-interactive-map'); ?></strong>&nbsp;
+        <strong><?php _e('Preview:', 'event-interactive-map'); ?></strong>&nbsp;
         <span id="eim-icon-preview" style="font-size:26px;vertical-align:middle"></span>
     </p>
 
@@ -102,7 +102,7 @@ function eim_render_settings_page() {
             <?php
             settings_fields('eim_settings');
             do_settings_sections('eim_settings');
-            submit_button(__('Salva impostazioni', 'event-interactive-map'));
+            submit_button(__('Save Settings', 'event-interactive-map'));
             ?>
         </form>
     </div>

@@ -1,8 +1,8 @@
 <div class="eim-wrapper">
     <div class="eim-map-controls">
         <div class="eim-controls-header">
-            <span class="eim-controls-label"><?php esc_html_e('Cerca e filtra', 'event-interactive-map'); ?></span>
-            <button id="eim-toggle-controls" class="eim-toggle-btn" title="<?php esc_attr_e('Mostra/nascondi filtri', 'event-interactive-map'); ?>" aria-expanded="true">
+            <span class="eim-controls-label"><?php esc_html_e('Search & Filter', 'event-interactive-map'); ?></span>
+            <button id="eim-toggle-controls" class="eim-toggle-btn" title="<?php esc_attr_e('Show/hide filters', 'event-interactive-map'); ?>" aria-expanded="true">
                 <span class="dashicons dashicons-arrow-up-alt2"></span>
             </button>
         </div>

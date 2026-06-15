@@ -252,7 +252,7 @@
             });
             html += `</div>`;
         } else {
-            html += `<p class="eim-popup-empty">Nessun concerto per questo filtro.</p>`;
+            html += `<p class="eim-popup-empty">${eimData.strings.noEventsForFilter || 'No events for this filter.'}</p>`;
         }
 
         html += `</div>`;

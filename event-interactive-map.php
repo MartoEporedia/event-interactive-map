@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Event Interactive Map
  * Description: WordPress plugin for interactive event maps with POI, filters, and mobile UX.
- * Version: 1.5.1
+ * Version: 1.6.0
  * Author: MartoEporedia
  * Text Domain: event-interactive-map
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 defined('ABSPATH') or die('No script kiddies please!');
 
 // Define plugin constants
-define('EIM_VERSION', '1.5.1');
+define('EIM_VERSION', '1.6.0');
 define('EIM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('EIM_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -66,6 +66,7 @@ function eim_enqueue_scripts() {
             'locateMe'          => __('Locate Me', 'event-interactive-map'),
             'searchPlaceholder' => __('Search artist...', 'event-interactive-map'),
             'geolocationError'  => __('Unable to get your location', 'event-interactive-map'),
+            'noEventsForFilter' => __('No events for this filter.', 'event-interactive-map'),
         ],
         'types' => [
             'concert' => __('Concert', 'event-interactive-map'),

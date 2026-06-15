@@ -37,14 +37,14 @@ add_action('init', 'eim_register_poi_cpt');
 function eim_register_poi_category_taxonomy() {
     register_taxonomy('poi_category', 'event_poi', [
         'labels' => [
-            'name'              => __('Categorie POI', 'event-interactive-map'),
-            'singular_name'     => __('Categoria POI', 'event-interactive-map'),
-            'add_new_item'      => __('Aggiungi categoria', 'event-interactive-map'),
-            'edit_item'         => __('Modifica categoria', 'event-interactive-map'),
-            'new_item'          => __('Nuova categoria', 'event-interactive-map'),
-            'search_items'      => __('Cerca categorie', 'event-interactive-map'),
-            'not_found'         => __('Nessuna categoria trovata', 'event-interactive-map'),
-            'all_items'         => __('Tutte le categorie', 'event-interactive-map'),
+            'name'              => __('POI Categories', 'event-interactive-map'),
+            'singular_name'     => __('POI Category', 'event-interactive-map'),
+            'add_new_item'      => __('Add New Category', 'event-interactive-map'),
+            'edit_item'         => __('Edit Category', 'event-interactive-map'),
+            'new_item'          => __('New Category', 'event-interactive-map'),
+            'search_items'      => __('Search Categories', 'event-interactive-map'),
+            'not_found'         => __('No categories found', 'event-interactive-map'),
+            'all_items'         => __('All Categories', 'event-interactive-map'),
         ],
         'hierarchical'      => true,
         'show_ui'           => true,
@@ -185,14 +185,14 @@ function eim_poi_meta_box_callback($post) {
         ?>
         <div class="eim-field" style="margin-top:28px;border-top:1px solid #ddd;padding-top:20px;">
             <label style="font-size:14px;font-weight:700;margin-bottom:12px;display:block;">
-                📅 <?php _e('Programma / Schedule', 'event-interactive-map'); ?>
+                📅 <?php _e('Programme / Schedule', 'event-interactive-map'); ?>
             </label>
             <p style="color:#666;font-size:12px;margin:-8px 0 12px;">
-                <?php _e('Ogni riga è uno slot del programma (artista, giorno, ora, link). Salvare per confermare.', 'event-interactive-map'); ?>
+                <?php _e('Each row is one programme slot (artist, day, time, link). Save post to confirm.', 'event-interactive-map'); ?>
             </p>
             <div id="eim-program-slots"></div>
             <button type="button" id="eim-add-slot" class="button button-secondary" style="margin-top:6px;">
-                + <?php _e('Aggiungi slot', 'event-interactive-map'); ?>
+                + <?php _e('Add slot', 'event-interactive-map'); ?>
             </button>
             <input type="hidden" name="eim_program_json" id="eim_program_json"
                    value="<?php echo esc_attr(wp_json_encode($program)); ?>">
@@ -207,7 +207,7 @@ function eim_poi_meta_box_callback($post) {
 
         <script>
         jQuery(document).ready(function($) {
-            var DAYS  = ['Venerdì','Sabato','Domenica'];
+            var DAYS  = <?php echo wp_json_encode(apply_filters('eim_program_days', ['Friday', 'Saturday', 'Sunday'])); ?>;
             var slots = <?php echo wp_json_encode($program); ?>;
 
             function esc(s) { return $('<div>').text(s || '').html(); }
@@ -216,21 +216,24 @@ function eim_poi_meta_box_callback($post) {
                 var $c = $('#eim-program-slots');
                 $c.empty();
                 if (!slots.length) {
-                    $c.append('<p style="color:#888;font-style:italic;margin:0 0 8px;">Nessuno slot. Clicca "Aggiungi slot" per iniziare.</p>');
+                    $c.append('<p style="color:#888;font-style:italic;margin:0 0 8px;"><?php echo esc_js(__('No slots yet. Click "Add slot" to start.', 'event-interactive-map')); ?></p>');
                     return;
                 }
                 slots.forEach(function(slot, idx) {
                     var dayOpts = DAYS.map(function(d) {
                         return '<option value="'+d+'"'+(slot.day===d?' selected':'')+'>'+d+'</option>';
                     }).join('');
+                    if (slot.day && !DAYS.includes(slot.day)) {
+                        dayOpts = '<option value="'+esc(slot.day)+'" selected>'+esc(slot.day)+'</option>' + dayOpts;
+                    }
                     var row = $('<div class="eim-program-row" data-idx="'+idx+'">'
-                        +'<div><label>Giorno</label><select class="eim-slot-day">'+dayOpts+'</select></div>'
-                        +'<div><label>Data</label><input type="date" class="eim-slot-date" value="'+esc(slot.date)+'"></div>'
-                        +'<div><label>Ora</label><input type="time" class="eim-slot-time" value="'+esc(slot.time)+'"></div>'
-                        +'<div><label>Artista / Evento</label><input type="text" class="eim-slot-band" value="'+esc(slot.band)+'" placeholder="Nome artista"></div>'
-                        +'<div><label>Link</label><input type="text" class="eim-slot-link" value="'+esc(slot.link)+'" placeholder="https://..."></div>'
-                        +'<div><label>Note (opz.)</label><input type="text" class="eim-slot-note" value="'+esc(slot.note)+'" placeholder="es. 3 band in gara"></div>'
-                        +'<div><button type="button" class="button eim-remove-slot" title="Rimuovi">✕</button></div>'
+                        +'<div><label><?php echo esc_js(__('Day', 'event-interactive-map')); ?></label><select class="eim-slot-day">'+dayOpts+'</select></div>'
+                        +'<div><label><?php echo esc_js(__('Date', 'event-interactive-map')); ?></label><input type="date" class="eim-slot-date" value="'+esc(slot.date)+'"></div>'
+                        +'<div><label><?php echo esc_js(__('Time', 'event-interactive-map')); ?></label><input type="time" class="eim-slot-time" value="'+esc(slot.time)+'"></div>'
+                        +'<div><label><?php echo esc_js(__('Artist / Event', 'event-interactive-map')); ?></label><input type="text" class="eim-slot-band" value="'+esc(slot.band)+'" placeholder="<?php echo esc_js(__('Artist name', 'event-interactive-map')); ?>"></div>'
+                        +'<div><label><?php echo esc_js(__('Link', 'event-interactive-map')); ?></label><input type="text" class="eim-slot-link" value="'+esc(slot.link)+'" placeholder="https://..."></div>'
+                        +'<div><label><?php echo esc_js(__('Notes (opt.)', 'event-interactive-map')); ?></label><input type="text" class="eim-slot-note" value="'+esc(slot.note)+'" placeholder=""></div>'
+                        +'<div><button type="button" class="button eim-remove-slot" title="<?php echo esc_js(__('Remove', 'event-interactive-map')); ?>">✕</button></div>'
                         +'</div>');
                     $c.append(row);
                 });
@@ -241,7 +244,7 @@ function eim_poi_meta_box_callback($post) {
                 $('#eim-program-slots .eim-program-row').each(function() {
                     var $r = $(this);
                     var band = $r.find('.eim-slot-band').val();
-                    if (!band.trim()) return; // skip empty rows
+                    if (!band.trim()) return;
                     slots.push({
                         band: band,
                         day:  $r.find('.eim-slot-day').val(),
@@ -256,7 +259,7 @@ function eim_poi_meta_box_callback($post) {
 
             $('#eim-add-slot').on('click', function() {
                 collectSlots();
-                slots.push({band:'', day:'Venerdì', date:'', time:'', link:'', note:''});
+                slots.push({band:'', day: DAYS[0] || '', date:'', time:'', link:'', note:''});
                 renderSlots();
             });
 
@@ -431,10 +434,10 @@ add_action('init', 'eim_register_post_meta');
 
 function eim_cat_icon_presets() {
     return [
-        '🎵' => 'Musica',  '🎸' => 'Chitarra', '🎤' => 'Microfono',
-        '🍺' => 'Birra',   '🍕' => 'Cibo',      '☕' => 'Bar',
-        '🚻' => 'Servizi', '🅿️' => 'Parcheggio', 'ℹ️' => 'Info',
-        '🛍️' => 'Stand',   '🎪' => 'Tenda',      '🌳' => 'Parco',
+        '🎵' => 'Music',   '🎸' => 'Guitar',  '🎤' => 'Microphone',
+        '🍺' => 'Beer',    '🍕' => 'Food',    '☕' => 'Bar',
+        '🚻' => 'Toilets', '🅿️' => 'Parking', 'ℹ️' => 'Info',
+        '🛍️' => 'Stand',   '🎪' => 'Tent',    '🌳' => 'Park',
     ];
 }
 
@@ -445,7 +448,7 @@ function eim_cat_fields_html($icon = '', $color = '#e67e22') {
     <?php foreach ($presets as $ic => $lbl): ?>
         <button type="button" class="button button-small"
             title="<?php echo esc_attr($lbl); ?>"
-            onclick="(function(){var i=document.getElementById('eim_cat_icon');i.value=<?php echo json_encode($ic); ?>;eimCatPrev()})()"
+            onclick="(function(){var i=document.getElementById('eim_cat_icon');i.value=<?php echo esc_attr(json_encode($ic)); ?>;eimCatPrev()})()"
             style="padding:2px 6px;font-size:16px;line-height:1.5"><?php echo esc_html($ic); ?></button>
     <?php endforeach; ?>
     </div>
@@ -483,7 +486,7 @@ function eim_cat_fields_html($icon = '', $color = '#e67e22') {
 // Form "Aggiungi categoria"
 add_action('poi_category_add_form_fields', function() {
     echo '<div class="form-field">';
-    echo '<label>' . esc_html__('Icona e colore', 'event-interactive-map') . '</label>';
+    echo '<label>' . esc_html__('Icon & Colour', 'event-interactive-map') . '</label>';
     echo eim_cat_fields_html();
     echo '</div>';
 });
@@ -493,7 +496,7 @@ add_action('poi_category_edit_form_fields', function($term) {
     $icon  = get_term_meta($term->term_id, 'eim_icon',  true);
     $color = get_term_meta($term->term_id, 'eim_color', true);
     echo '<tr class="form-field"><th scope="row">';
-    echo '<label>' . esc_html__('Icona e colore', 'event-interactive-map') . '</label></th><td>';
+    echo '<label>' . esc_html__('Icon & Colour', 'event-interactive-map') . '</label></th><td>';
     echo eim_cat_fields_html($icon, $color ?: '#e67e22');
     echo '</td></tr>';
 });

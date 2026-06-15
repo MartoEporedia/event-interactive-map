@@ -1,0 +1,373 @@
+# Copyright (C) 2024 MartoEporedia
+# This file is distributed under the GPL v2 or later.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Event Interactive Map 1.6.0\n"
+"Report-Msgid-Bugs-To: https://github.com/MartoEporedia/event-interactive-map/issues\n"
+"POT-Creation-Date: 2026-06-15T00:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: manual\n"
+"X-Domain: event-interactive-map\n"
+
+#: event-interactive-map.php
+msgid "Loading events..."
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Error loading events. Please try again."
+msgstr ""
+
+#: event-interactive-map.php
+msgid "No events found."
+msgstr ""
+
+#: event-interactive-map.php
+msgid "All"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "View Details"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Locate Me"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Search artist..."
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Unable to get your location"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "No events for this filter."
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Concert"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Exhibition"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Conference"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Workshop"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Festival"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Sports"
+msgstr ""
+
+#: event-interactive-map.php
+msgid "Other"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event POIs"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event POI"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Add New"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Add New Event POI"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Edit Event POI"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "New Event POI"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "View Event POI"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Search Event POIs"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "No Event POIs found"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "No Event POIs found in Trash"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "POI Categories"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "POI Category"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Add New Category"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Edit Category"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "New Category"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Search Categories"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "No categories found"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "All Categories"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Map Sets"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Map Set"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Add New Map Set"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Edit Map Set"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event Details & Location"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event Type"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Select Type"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Concert"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Exhibition"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Conference"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Workshop"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Festival"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Sports"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Other"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event Date"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Event Time"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Address"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Enter address to search on map"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Search Address"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Latitude"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Longitude"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "How to set location:"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Search for an address using the field above"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Click on the map to set the exact location"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Drag the marker to adjust the position"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Coordinates will update automatically"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Programme / Schedule"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Each row is one programme slot (artist, day, time, link). Save post to confirm."
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Add slot"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "No slots yet. Click \"Add slot\" to start."
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Day"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Date"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Time"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Artist / Event"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Link"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Notes (opt.)"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Artist name"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Remove"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Please enter an address"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Address not found"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Error searching address"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Icon & Colour"
+msgstr ""
+
+#: includes/cpt-poi.php
+msgid "Please set the event location on the map below."
+msgstr ""
+
+#: includes/settings.php
+msgid "Event Interactive Map"
+msgstr ""
+
+#: includes/settings.php
+msgid "Event Map"
+msgstr ""
+
+#: includes/settings.php
+msgid "Map Markers"
+msgstr ""
+
+#: includes/settings.php
+msgid "Default icon used for POIs without an assigned category. Icon and colour per category are set directly in POI → POI Categories."
+msgstr ""
+
+#: includes/settings.php
+msgid "Default Icon"
+msgstr ""
+
+#: includes/settings.php
+msgid "Dashicon class (e.g. <code>dashicons-tickets-alt</code>) or custom emoji / HTML"
+msgstr ""
+
+#: includes/settings.php
+msgid "Preview:"
+msgstr ""
+
+#: includes/settings.php
+msgid "Save Settings"
+msgstr ""
+
+#: templates/map-template.php
+msgid "Search & Filter"
+msgstr ""
+
+#: templates/map-template.php
+msgid "Show/hide filters"
+msgstr ""
+
+#: templates/map-template.php
+msgid "Search"
+msgstr ""
+
+#: templates/map-template.php
+msgid "Reset View"
+msgstr ""

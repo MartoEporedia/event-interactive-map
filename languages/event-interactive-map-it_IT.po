@@ -1,0 +1,264 @@
+# Italian translation for Event Interactive Map
+# Copyright (C) 2024 MartoEporedia
+# This file is distributed under the GPL v2 or later.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Event Interactive Map 1.6.0\n"
+"Report-Msgid-Bugs-To: https://github.com/MartoEporedia/event-interactive-map/issues\n"
+"POT-Creation-Date: 2026-06-15T00:00:00+00:00\n"
+"PO-Revision-Date: 2026-06-15T00:00:00+00:00\n"
+"Last-Translator: MartoEporedia\n"
+"Language-Team: Italian\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: manual\n"
+"X-Domain: event-interactive-map\n"
+
+msgid "Loading events..."
+msgstr "Caricamento eventi..."
+
+msgid "Error loading events. Please try again."
+msgstr "Errore nel caricamento degli eventi. Riprova."
+
+msgid "No events found."
+msgstr "Nessun evento trovato."
+
+msgid "All"
+msgstr "Tutti"
+
+msgid "View Details"
+msgstr "Vedi dettagli"
+
+msgid "Locate Me"
+msgstr "Posizione corrente"
+
+msgid "Search artist..."
+msgstr "Cerca artista..."
+
+msgid "Unable to get your location"
+msgstr "Impossibile ottenere la tua posizione"
+
+msgid "No events for this filter."
+msgstr "Nessun evento per questo filtro."
+
+msgid "Concert"
+msgstr "Concerto"
+
+msgid "Exhibition"
+msgstr "Mostra"
+
+msgid "Conference"
+msgstr "Conferenza"
+
+msgid "Workshop"
+msgstr "Workshop"
+
+msgid "Festival"
+msgstr "Festival"
+
+msgid "Sports"
+msgstr "Sport"
+
+msgid "Other"
+msgstr "Altro"
+
+msgid "Event POIs"
+msgstr "POI evento"
+
+msgid "Event POI"
+msgstr "POI evento"
+
+msgid "Add New"
+msgstr "Aggiungi nuovo"
+
+msgid "Add New Event POI"
+msgstr "Aggiungi nuovo POI evento"
+
+msgid "Edit Event POI"
+msgstr "Modifica POI evento"
+
+msgid "New Event POI"
+msgstr "Nuovo POI evento"
+
+msgid "View Event POI"
+msgstr "Visualizza POI evento"
+
+msgid "Search Event POIs"
+msgstr "Cerca POI evento"
+
+msgid "No Event POIs found"
+msgstr "Nessun POI evento trovato"
+
+msgid "No Event POIs found in Trash"
+msgstr "Nessun POI evento nel cestino"
+
+msgid "POI Categories"
+msgstr "Categorie POI"
+
+msgid "POI Category"
+msgstr "Categoria POI"
+
+msgid "Add New Category"
+msgstr "Aggiungi categoria"
+
+msgid "Edit Category"
+msgstr "Modifica categoria"
+
+msgid "New Category"
+msgstr "Nuova categoria"
+
+msgid "Search Categories"
+msgstr "Cerca categorie"
+
+msgid "No categories found"
+msgstr "Nessuna categoria trovata"
+
+msgid "All Categories"
+msgstr "Tutte le categorie"
+
+msgid "Map Sets"
+msgstr "Set mappa"
+
+msgid "Map Set"
+msgstr "Set mappa"
+
+msgid "Add New Map Set"
+msgstr "Aggiungi set mappa"
+
+msgid "Edit Map Set"
+msgstr "Modifica set mappa"
+
+msgid "Event Details & Location"
+msgstr "Dettagli e posizione evento"
+
+msgid "Event Type"
+msgstr "Tipo di evento"
+
+msgid "Select Type"
+msgstr "Seleziona tipo"
+
+msgid "Event Date"
+msgstr "Data evento"
+
+msgid "Event Time"
+msgstr "Ora evento"
+
+msgid "Address"
+msgstr "Indirizzo"
+
+msgid "Enter address to search on map"
+msgstr "Inserisci indirizzo da cercare sulla mappa"
+
+msgid "Search Address"
+msgstr "Cerca indirizzo"
+
+msgid "Latitude"
+msgstr "Latitudine"
+
+msgid "Longitude"
+msgstr "Longitudine"
+
+msgid "How to set location:"
+msgstr "Come impostare la posizione:"
+
+msgid "Search for an address using the field above"
+msgstr "Cerca un indirizzo usando il campo sopra"
+
+msgid "Click on the map to set the exact location"
+msgstr "Clicca sulla mappa per impostare la posizione"
+
+msgid "Drag the marker to adjust the position"
+msgstr "Trascina il segnaposto per regolare la posizione"
+
+msgid "Coordinates will update automatically"
+msgstr "Le coordinate si aggiornano automaticamente"
+
+msgid "Programme / Schedule"
+msgstr "Programma / Schedule"
+
+msgid "Each row is one programme slot (artist, day, time, link). Save post to confirm."
+msgstr "Ogni riga è uno slot del programma (artista, giorno, ora, link). Salva per confermare."
+
+msgid "Add slot"
+msgstr "Aggiungi slot"
+
+msgid "No slots yet. Click \"Add slot\" to start."
+msgstr "Nessuno slot. Clicca \"Aggiungi slot\" per iniziare."
+
+msgid "Day"
+msgstr "Giorno"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Time"
+msgstr "Ora"
+
+msgid "Artist / Event"
+msgstr "Artista / Evento"
+
+msgid "Link"
+msgstr "Link"
+
+msgid "Notes (opt.)"
+msgstr "Note (opz.)"
+
+msgid "Artist name"
+msgstr "Nome artista"
+
+msgid "Remove"
+msgstr "Rimuovi"
+
+msgid "Please enter an address"
+msgstr "Inserisci un indirizzo"
+
+msgid "Address not found"
+msgstr "Indirizzo non trovato"
+
+msgid "Error searching address"
+msgstr "Errore nella ricerca dell'indirizzo"
+
+msgid "Icon & Colour"
+msgstr "Icona e colore"
+
+msgid "Please set the event location on the map below."
+msgstr "Imposta la posizione dell'evento sulla mappa sottostante."
+
+msgid "Event Interactive Map"
+msgstr "Event Interactive Map"
+
+msgid "Event Map"
+msgstr "Event Map"
+
+msgid "Map Markers"
+msgstr "Marcatori mappa"
+
+msgid "Default icon used for POIs without an assigned category. Icon and colour per category are set directly in POI → POI Categories."
+msgstr "Icona usata per i POI senza categoria assegnata. Icona e colore per categoria si impostano in POI → Categorie POI."
+
+msgid "Default Icon"
+msgstr "Icona predefinita"
+
+msgid "Dashicon class (e.g. <code>dashicons-tickets-alt</code>) or custom emoji / HTML"
+msgstr "Classe Dashicon (es. <code>dashicons-tickets-alt</code>) oppure emoji/HTML personalizzato"
+
+msgid "Preview:"
+msgstr "Anteprima:"
+
+msgid "Save Settings"
+msgstr "Salva impostazioni"
+
+msgid "Search & Filter"
+msgstr "Cerca e filtra"
+
+msgid "Show/hide filters"
+msgstr "Mostra/nascondi filtri"
+
+msgid "Search"
+msgstr "Cerca"
+
+msgid "Reset View"
+msgstr "Ripristina vista"
