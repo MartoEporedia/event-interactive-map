@@ -1,5 +1,16 @@
 <?php
 /**
+ * Force classic editor for event_poi: the location meta box uses Leaflet
+ * and needs the classic editing context to render correctly.
+ */
+add_filter('use_block_editor_for_post_type', function($use_block_editor, $post_type) {
+    if ($post_type === 'event_poi') {
+        return false;
+    }
+    return $use_block_editor;
+}, 10, 2);
+
+/**
  * Register Event POI Custom Post Type
  */
 function eim_register_poi_cpt() {
