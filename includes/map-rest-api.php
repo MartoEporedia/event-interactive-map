@@ -179,10 +179,15 @@ function eim_upsert_poi_callback($request) {
     update_post_meta($post_id, 'program',       $program);
 
     if (!empty($map_set)) {
-        wp_set_post_terms($post_id, [$map_set], 'map_set');
+        $ms_term = get_term_by('slug', $map_set, 'map_set');
+        $ms_id   = $ms_term && !is_wp_error($ms_term) ? $ms_term->term_id : null;
+        wp_set_object_terms($post_id, $ms_id ? [$ms_id] : [$map_set], 'map_set');
     }
     if (!empty($category)) {
-        wp_set_post_terms($post_id, [$category], 'poi_category');
+        $term = get_term_by('slug', $category, 'poi_category');
+        if ($term && !is_wp_error($term)) {
+            wp_set_object_terms($post_id, [$term->term_id], 'poi_category');
+        }
     }
 
     return rest_ensure_response([
