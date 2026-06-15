@@ -10,13 +10,20 @@
     let poiMarkers = {};  // poi.id → marker
     let bandIndex  = [];  // [{band, day, time, poi}]
 
-    const stageIcon = L.divIcon({
-        className: 'eim-marker eim-marker-stage',
-        html: '<span class="dashicons dashicons-tickets-alt"></span>',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -44]
-    });
+    function buildStageIcon() {
+        const raw  = (eimData.markerIcon || 'dashicons-tickets-alt').trim();
+        const html = raw.startsWith('dashicons-')
+            ? `<span class="dashicons ${raw.replace(/[^a-z0-9-]/g, '')}"></span>`
+            : raw;
+        return L.divIcon({
+            className: 'eim-marker eim-marker-stage',
+            html,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -44]
+        });
+    }
+    const stageIcon = buildStageIcon();
 
     function initMap() {
         const mapElement = document.getElementById('event-map');
