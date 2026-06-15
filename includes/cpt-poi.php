@@ -427,6 +427,89 @@ function eim_register_post_meta() {
 }
 add_action('init', 'eim_register_post_meta');
 
+// ── Campi icona/colore sulla pagina della categoria ───────────────────────
+
+function eim_cat_icon_presets() {
+    return [
+        '🎵' => 'Musica',  '🎸' => 'Chitarra', '🎤' => 'Microfono',
+        '🍺' => 'Birra',   '🍕' => 'Cibo',      '☕' => 'Bar',
+        '🚻' => 'Servizi', '🅿️' => 'Parcheggio', 'ℹ️' => 'Info',
+        '🛍️' => 'Stand',   '🎪' => 'Tenda',      '🌳' => 'Parco',
+    ];
+}
+
+function eim_cat_fields_html($icon = '', $color = '#e67e22') {
+    $presets = eim_cat_icon_presets();
+    ob_start(); ?>
+    <div class="eim-cat-icon-row" style="margin-bottom:6px;display:flex;gap:4px;flex-wrap:wrap">
+    <?php foreach ($presets as $ic => $lbl): ?>
+        <button type="button" class="button button-small"
+            title="<?php echo esc_attr($lbl); ?>"
+            onclick="(function(){var i=document.getElementById('eim_cat_icon');i.value=<?php echo json_encode($ic); ?>;eimCatPrev()})()"
+            style="padding:2px 6px;font-size:16px;line-height:1.5"><?php echo esc_html($ic); ?></button>
+    <?php endforeach; ?>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="eim_cat_icon" name="eim_cat_icon"
+            value="<?php echo esc_attr($icon); ?>"
+            style="width:160px" placeholder="emoji o dashicons-*"
+            oninput="eimCatPrev()">
+        <input type="color" id="eim_cat_color" name="eim_cat_color"
+            value="<?php echo esc_attr($color ?: '#e67e22'); ?>"
+            style="width:52px;height:36px;cursor:pointer;border:none;padding:0"
+            oninput="eimCatPrev()">
+        <span id="eim_cat_preview" style="display:inline-flex;align-items:center;justify-content:center;
+            width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+            border:3px solid <?php echo esc_attr($color ?: '#e67e22'); ?>;
+            background:<?php echo esc_attr($color ?: '#e67e22'); ?>22;font-size:16px">
+            <span id="eim_cat_preview_inner" style="transform:rotate(45deg)"><?php echo esc_html($icon ?: '📍'); ?></span>
+        </span>
+    </div>
+    <script>
+    function eimCatPrev(){
+        var icon=document.getElementById('eim_cat_icon').value||'📍';
+        var color=document.getElementById('eim_cat_color').value;
+        var p=document.getElementById('eim_cat_preview');
+        p.style.borderColor=color; p.style.background=color+'33';
+        document.getElementById('eim_cat_preview_inner').textContent=
+            icon.startsWith('dashicons-')?'':icon;
+    }
+    document.addEventListener('DOMContentLoaded',eimCatPrev);
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+// Form "Aggiungi categoria"
+add_action('poi_category_add_form_fields', function() {
+    echo '<div class="form-field">';
+    echo '<label>' . esc_html__('Icona e colore', 'event-interactive-map') . '</label>';
+    echo eim_cat_fields_html();
+    echo '</div>';
+});
+
+// Form "Modifica categoria"
+add_action('poi_category_edit_form_fields', function($term) {
+    $icon  = get_term_meta($term->term_id, 'eim_icon',  true);
+    $color = get_term_meta($term->term_id, 'eim_color', true);
+    echo '<tr class="form-field"><th scope="row">';
+    echo '<label>' . esc_html__('Icona e colore', 'event-interactive-map') . '</label></th><td>';
+    echo eim_cat_fields_html($icon, $color ?: '#e67e22');
+    echo '</td></tr>';
+});
+
+// Salvataggio
+function eim_save_cat_meta($term_id) {
+    if (isset($_POST['eim_cat_icon'])) {
+        update_term_meta($term_id, 'eim_icon',  wp_kses_post(wp_unslash($_POST['eim_cat_icon'])));
+    }
+    if (isset($_POST['eim_cat_color'])) {
+        update_term_meta($term_id, 'eim_color', sanitize_hex_color(wp_unslash($_POST['eim_cat_color'])) ?: '#e67e22');
+    }
+}
+add_action('created_poi_category', 'eim_save_cat_meta');
+add_action('edited_poi_category',  'eim_save_cat_meta');
+
 /**
  * Add admin notices for required fields
  */

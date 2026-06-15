@@ -212,7 +212,8 @@
 }
 
 .eim-marker-inner .dashicons,
-.eim-marker-inner span {
+.eim-marker-inner span,
+.eim-marker-inner svg {
     transform: rotate(45deg);
     font-size: 18px;
     width: 18px;
@@ -221,6 +222,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: inherit;
+}
+
+/* Eredita il colore del bordo per il pin SVG */
+.eim-marker-inner {
+    color: #555;
 }
 
 .eim-marker-concert {

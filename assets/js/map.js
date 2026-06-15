@@ -10,24 +10,26 @@
     let poiMarkers = {};  // poi.id → marker
     let bandIndex  = [];  // [{band, day, time, poi}]
 
+    const DEFAULT_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>`;
+
     function buildMarkerIcon(poi) {
-        const catSlug = poi.category?.slug || '';
-        const catCfg  = (eimData.categoryIcons || {})[catSlug] || {};
+        const cat   = poi.category || {};
+        const raw   = (cat.icon  || '').trim();
+        const color = (cat.color || '#555').trim();
+        const catClass = cat.slug ? ` eim-cat-${cat.slug.replace(/[^a-z0-9-]/g, '')}` : '';
 
-        const raw   = (catCfg.icon || eimData.markerIcon || 'dashicons-tickets-alt').trim();
-        const color = catCfg.color || '';
-        const html  = raw.startsWith('dashicons-')
-            ? `<span class="dashicons ${raw.replace(/[^a-z0-9-]/g, '')}"></span>`
-            : `<span>${raw}</span>`;
-
-        const styleAttr = color
-            ? ` style="border-color:${color};background:${color}22"`
-            : '';
-        const catClass = catSlug ? ` eim-cat-${catSlug.replace(/[^a-z0-9-]/g, '')}` : '';
+        let inner;
+        if (raw.startsWith('dashicons-')) {
+            inner = `<span class="dashicons ${raw.replace(/[^a-z0-9-]/g, '')}"></span>`;
+        } else if (raw) {
+            inner = `<span>${raw}</span>`;
+        } else {
+            inner = DEFAULT_PIN_SVG;
+        }
 
         return L.divIcon({
             className: `eim-marker eim-marker-stage${catClass}`,
-            html: `<div class="eim-marker-inner"${styleAttr}>${html}</div>`,
+            html: `<div class="eim-marker-inner" style="border-color:${color};background:${color}22">${inner}</div>`,
             iconSize: [40, 40],
             iconAnchor: [20, 40],
             popupAnchor: [0, -44]

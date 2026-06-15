@@ -59,9 +59,16 @@ function eim_get_pois_callback($request) {
             }
 
             $cat_terms = wp_get_post_terms($post->ID, 'poi_category');
-            $category  = (!empty($cat_terms) && !is_wp_error($cat_terms))
-                ? ['slug' => $cat_terms[0]->slug, 'name' => $cat_terms[0]->name]
-                : null;
+            $category  = null;
+            if (!empty($cat_terms) && !is_wp_error($cat_terms)) {
+                $ct = $cat_terms[0];
+                $category = [
+                    'slug'  => $ct->slug,
+                    'name'  => $ct->name,
+                    'icon'  => get_term_meta($ct->term_id, 'eim_icon',  true) ?: '',
+                    'color' => get_term_meta($ct->term_id, 'eim_color', true) ?: '',
+                ];
+            }
 
             $pois[] = [
                 'id'        => absint($post->ID),
