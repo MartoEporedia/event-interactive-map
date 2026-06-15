@@ -10,20 +10,29 @@
     let poiMarkers = {};  // poi.id → marker
     let bandIndex  = [];  // [{band, day, time, poi}]
 
-    function buildStageIcon() {
-        const raw  = (eimData.markerIcon || 'dashicons-tickets-alt').trim();
-        const html = raw.startsWith('dashicons-')
+    function buildMarkerIcon(poi) {
+        const catSlug = poi.category?.slug || '';
+        const catCfg  = (eimData.categoryIcons || {})[catSlug] || {};
+
+        const raw   = (catCfg.icon || eimData.markerIcon || 'dashicons-tickets-alt').trim();
+        const color = catCfg.color || '';
+        const html  = raw.startsWith('dashicons-')
             ? `<span class="dashicons ${raw.replace(/[^a-z0-9-]/g, '')}"></span>`
-            : raw;
+            : `<span>${raw}</span>`;
+
+        const styleAttr = color
+            ? ` style="border-color:${color};background:${color}22"`
+            : '';
+        const catClass = catSlug ? ` eim-cat-${catSlug.replace(/[^a-z0-9-]/g, '')}` : '';
+
         return L.divIcon({
-            className: 'eim-marker eim-marker-stage',
-            html,
+            className: `eim-marker eim-marker-stage${catClass}`,
+            html: `<div class="eim-marker-inner"${styleAttr}>${html}</div>`,
             iconSize: [40, 40],
             iconAnchor: [20, 40],
             popupAnchor: [0, -44]
         });
     }
-    const stageIcon = buildStageIcon();
 
     function initMap() {
         const mapElement = document.getElementById('event-map');
@@ -194,7 +203,7 @@
         pois.forEach(poi => {
             if (!poi.lat || !poi.lng) return;
 
-            const marker = L.marker([poi.lat, poi.lng], { icon: stageIcon });
+            const marker = L.marker([poi.lat, poi.lng], { icon: buildMarkerIcon(poi) });
             marker.bindPopup(createPopupContent(poi, day), {
                 maxWidth: 320,
                 className: 'eim-popup'

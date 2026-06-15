@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Event Interactive Map
  * Description: WordPress plugin for interactive event maps with POI, filters, and mobile UX.
- * Version: 1.4.1
+ * Version: 1.5.0
  * Author: MartoEporedia
  * Text Domain: event-interactive-map
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 defined('ABSPATH') or die('No script kiddies please!');
 
 // Define plugin constants
-define('EIM_VERSION', '1.4.1');
+define('EIM_VERSION', '1.5.0');
 define('EIM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('EIM_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -56,7 +56,8 @@ function eim_enqueue_scripts() {
         'restUrl' => esc_url_raw(rest_url('eim/v1/pois')),
         'mapSet'  => sanitize_title($atts['group']),
         'nonce'      => wp_create_nonce('wp_rest'),
-        'markerIcon' => get_option('eim_marker_icon', 'dashicons-tickets-alt'),
+        'markerIcon'     => get_option('eim_marker_icon', 'dashicons-tickets-alt'),
+        'categoryIcons'  => json_decode(get_option('eim_category_icons', '{}'), true) ?: new stdClass(),
         'strings' => [
             'loading'           => __('Loading events...', 'event-interactive-map'),
             'error'             => __('Error loading events. Please try again.', 'event-interactive-map'),

@@ -58,6 +58,11 @@ function eim_get_pois_callback($request) {
                 if (!$has_day) continue;
             }
 
+            $cat_terms = wp_get_post_terms($post->ID, 'poi_category');
+            $category  = (!empty($cat_terms) && !is_wp_error($cat_terms))
+                ? ['slug' => $cat_terms[0]->slug, 'name' => $cat_terms[0]->name]
+                : null;
+
             $pois[] = [
                 'id'        => absint($post->ID),
                 'title'     => sanitize_text_field(get_the_title($post)),
@@ -69,6 +74,7 @@ function eim_get_pois_callback($request) {
                 'date'      => sanitize_text_field($event_date),
                 'time'      => sanitize_text_field($event_time),
                 'program'   => is_array($program) ? $program : [],
+                'category'  => $category,
                 'permalink' => esc_url(get_permalink($post)),
             ];
         }
@@ -122,9 +128,10 @@ function eim_upsert_poi_callback($request) {
     $address = sanitize_text_field($request->get_param('event_address'));
     $date    = sanitize_text_field($request->get_param('event_date') ?: '');
     $time    = sanitize_text_field($request->get_param('event_time') ?: '');
-    $program = $request->get_param('program') ?: '[]';
-    $content = wp_kses_post($request->get_param('content') ?: '');
-    $map_set = sanitize_title($request->get_param('map_set'));
+    $program  = $request->get_param('program') ?: '[]';
+    $content  = wp_kses_post($request->get_param('content') ?: '');
+    $map_set  = sanitize_title($request->get_param('map_set'));
+    $category = sanitize_title($request->get_param('category') ?: '');
 
     if (empty($title) || empty($lat) || empty($lng)) {
         return new WP_Error('missing_fields', 'title, lat and lng are required', ['status' => 400]);
@@ -166,6 +173,9 @@ function eim_upsert_poi_callback($request) {
 
     if (!empty($map_set)) {
         wp_set_post_terms($post_id, [$map_set], 'map_set');
+    }
+    if (!empty($category)) {
+        wp_set_post_terms($post_id, [$category], 'poi_category');
     }
 
     return rest_ensure_response([

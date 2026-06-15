@@ -32,6 +32,30 @@ function eim_register_poi_cpt() {
 add_action('init', 'eim_register_poi_cpt');
 
 /**
+ * Register poi_category taxonomy for categorising POIs (palco, food, servizi…)
+ */
+function eim_register_poi_category_taxonomy() {
+    register_taxonomy('poi_category', 'event_poi', [
+        'labels' => [
+            'name'              => __('Categorie POI', 'event-interactive-map'),
+            'singular_name'     => __('Categoria POI', 'event-interactive-map'),
+            'add_new_item'      => __('Aggiungi categoria', 'event-interactive-map'),
+            'edit_item'         => __('Modifica categoria', 'event-interactive-map'),
+            'new_item'          => __('Nuova categoria', 'event-interactive-map'),
+            'search_items'      => __('Cerca categorie', 'event-interactive-map'),
+            'not_found'         => __('Nessuna categoria trovata', 'event-interactive-map'),
+            'all_items'         => __('Tutte le categorie', 'event-interactive-map'),
+        ],
+        'hierarchical'      => true,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'show_in_rest'      => true,
+        'rewrite'           => ['slug' => 'poi-category'],
+    ]);
+}
+add_action('init', 'eim_register_poi_category_taxonomy');
+
+/**
  * Register map_set taxonomy for grouping POIs into separate maps
  */
 function eim_register_map_set_taxonomy() {
