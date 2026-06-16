@@ -588,6 +588,7 @@
         line-height: 1;
         color: #555;
         transition: transform 0.2s ease;
+        margin: 0;
     }
 
     .eim-toggle-btn .dashicons {
@@ -598,16 +599,18 @@
         transition: transform 0.2s ease;
     }
 
-    /* Corpo dei filtri: animazione collasso */
+    /* Corpo dei filtri: animazione collasso.
+       max-height generosa per non tagliare i filtri anche quando
+       il tema WP aggiunge margin/padding agli input. */
     .eim-controls-body {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
         overflow: hidden;
-        max-height: 120px;
+        max-height: 300px;
         opacity: 1;
         padding-top: 6px;
-        transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.2s ease;
+        transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
     }
 
     .eim-map-controls.eim-collapsed .eim-controls-body {
@@ -618,6 +621,13 @@
 
     .eim-map-controls.eim-collapsed .eim-toggle-btn .dashicons {
         transform: rotate(180deg);
+    }
+
+    /* Resetta margini aggiuntivi che i temi WP applicano a form elements */
+    .eim-controls-body input,
+    .eim-controls-body button {
+        margin: 0;
+        box-sizing: border-box;
     }
 
     /* Search group si espande, locate/reset restano compatti */
@@ -631,10 +641,20 @@
         flex: 0 0 auto;
     }
 
-    /* Filtri giorno: seconda riga a tutta larghezza */
+    /* Filtri giorno: seconda riga a tutta larghezza, wrap per mostrare tutti i bottoni */
     #eim-day-filter {
         flex-basis: 100%;
         min-width: 100%;
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    /* Bottoni giornata: wrap visibile, tap target adeguato */
+    #eim-day-filter .eim-day-btn {
+        flex-shrink: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+        min-height: 36px;
     }
 
     .eim-popup .leaflet-popup-content {
@@ -665,10 +685,18 @@
     #eim-search-input {
         font-size: 13px;
         padding: 7px 10px;
+        margin: 0;
     }
 
     .eim-btn {
         padding: 7px 8px;
+        margin: 0;
+    }
+
+    /* Bottoni giornata: padding ridotto per schermi piccoli */
+    #eim-day-filter .eim-day-btn {
+        padding: 7px 10px;
+        font-size: 12px;
     }
 
     #event-map {
