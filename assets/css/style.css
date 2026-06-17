@@ -554,10 +554,15 @@
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    /* Controlli: sticky in cima, non più overlay */
+    /* Controlli: sticky in cima, non più overlay.
+       Resettiamo left/right del desktop per evitare overflow. */
     .eim-map-controls {
         position: sticky;
         top: 0;
+        left: auto;
+        right: auto;
+        width: 100%;
+        box-sizing: border-box;
         z-index: 500;
         border-radius: 8px 8px 0 0;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -641,15 +646,24 @@
         box-sizing: border-box;
     }
 
-    /* Search group si espande, locate/reset restano compatti */
+    /* Search input occupa tutta la larghezza — i bottoni icona
+       (search/locate/reset) usano dashicons non disponibili sul
+       frontend mobile: li nascondiamo e usiamo l'autocomplete. */
     .eim-control-group {
         flex: 1;
         min-width: 0;
     }
 
+    #eim-search-btn,
     #eim-locate-btn,
     #eim-reset-btn {
-        flex: 0 0 auto;
+        display: none;
+    }
+
+    #eim-search-input {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
     }
 
     /* Filtri giorno: seconda riga a tutta larghezza, wrap per mostrare tutti i bottoni */
@@ -694,14 +708,10 @@
 
 @media screen and (max-width: 480px) {
     #eim-search-input {
-        font-size: 13px;
-        padding: 7px 10px;
+        font-size: 14px;
+        padding: 9px 12px;
         margin: 0;
-    }
-
-    .eim-btn {
-        padding: 7px 8px;
-        margin: 0;
+        border-radius: 6px;
     }
 
     /* Bottoni giornata: padding ridotto per schermi piccoli */
