@@ -137,10 +137,10 @@
 .eim-day-btn.active,
 .eim-day-btn.active:hover { color: white; border-color: transparent; }
 
-.eim-day-btn[data-day=""].active    { background: #555; }
-.eim-day-btn.eim-day-color-0.active { background: #9b59b6; }
-.eim-day-btn.eim-day-color-1.active { background: #e67e22; }
-.eim-day-btn.eim-day-color-2.active { background: #27ae60; }
+.eim-day-btn[data-day=""].active    { background: #1d4a1d; }
+.eim-day-btn.eim-day-color-0.active { background: #6a1b9a; }
+.eim-day-btn.eim-day-color-1.active { background: #c8941a; }
+.eim-day-btn.eim-day-color-2.active { background: #0097a7; }
 .eim-day-btn.eim-day-color-3.active { background: #3498db; }
 .eim-day-btn.eim-day-color-4.active { background: #e74c3c; }
 
@@ -399,17 +399,17 @@
     align-items: center;
     gap: 5px;
     padding: 8px 15px;
-    background: #0073aa;
+    background: #1d4a1d;
     color: white !important;
     text-decoration: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     transition: background 0.2s ease;
 }
 
 .eim-popup-link:hover {
-    background: #005a87;
+    background: #c8941a;
 }
 
 .eim-popup-link .dashicons {
@@ -459,7 +459,7 @@
     white-space: nowrap;
 }
 
-.eim-slot-band a { color: #0073aa; text-decoration: none; font-weight: 500; }
+.eim-slot-band a { color: #1d4a1d; text-decoration: none; font-weight: 500; }
 .eim-slot-band a:hover { text-decoration: underline; }
 
 .eim-popup-empty { color: #999; font-size: 13px; margin: 8px 0 0; }
@@ -483,7 +483,7 @@
     height: 50px;
     margin: 0 auto 15px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #0073aa;
+    border-top: 4px solid #1d4a1d;
     border-radius: 50%;
     animation: eim-spin 1s linear infinite;
 }
@@ -546,6 +546,12 @@
     display: contents;
 }
 
+/* Brand colors */
+.eim-day-btn[data-day=""].active    { background: #1d4a1d; }
+.eim-day-btn.eim-day-color-0.active { background: #6a1b9a; }
+.eim-day-btn.eim-day-color-1.active { background: #c8941a; }
+.eim-day-btn.eim-day-color-2.active { background: #0097a7; }
+
 /* Responsive Design */
 @media screen and (max-width: 768px) {
     /* Controlli: sticky in cima, non più overlay */
@@ -569,15 +575,19 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 2px 4px;
+        padding: 8px 12px;
         cursor: pointer;
         user-select: none;
+        background: #1d4a1d;
+        border-radius: 6px 6px 0 0;
+        margin: -8px -8px 0;
     }
 
     .eim-controls-label {
         font-size: 13px;
         font-weight: 600;
-        color: #444;
+        color: #fff;
+        letter-spacing: 0.03em;
     }
 
     .eim-toggle-btn {
@@ -586,7 +596,7 @@
         cursor: pointer;
         padding: 2px 4px;
         line-height: 1;
-        color: #555;
+        color: #fff;
         transition: transform 0.2s ease;
         margin: 0;
     }
@@ -596,6 +606,7 @@
         height: 18px;
         font-size: 18px;
         display: block;
+        color: #fff;
         transition: transform 0.2s ease;
     }
 
@@ -723,28 +734,28 @@
     }
 }
 
-/* Dark mode support (optional) */
+/* Dark mode: mantiene sfondo chiaro per coerenza col brand SBAF */
 @media (prefers-color-scheme: dark) {
     .eim-map-controls {
-        background: rgba(45, 45, 45, 0.95);
-        border: 1px solid #555;
+        background: rgba(255, 255, 255, 0.97);
+        border: 1px solid #dde6dd;
     }
 
     #eim-search-input,
     #eim-type-filter {
-        background: #333;
-        color: #fff;
-        border-color: #555;
+        background: #fff;
+        color: #333;
+        border-color: #cdd;
     }
 
     .eim-btn {
-        background: #333;
-        color: #fff;
-        border-color: #555;
+        background: #f4f7f4;
+        color: #1d4a1d;
+        border-color: #dde6dd;
     }
 
     .eim-btn:hover {
-        background: #444;
+        background: #e8f0e8;
     }
 }
 

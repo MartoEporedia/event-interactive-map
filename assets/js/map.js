@@ -29,7 +29,7 @@
 
         return L.divIcon({
             className: `eim-marker eim-marker-stage${catClass}`,
-            html: `<div class="eim-marker-inner" style="border-color:${color};background:${color}22">${inner}</div>`,
+            html: `<div class="eim-marker-inner" style="border-color:${color};background:${color}22;margin-top:-10px;">${inner}</div>`,
             iconSize: [40, 40],
             iconAnchor: [20, 40],
             popupAnchor: [0, -44]
