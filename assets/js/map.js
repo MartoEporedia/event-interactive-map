@@ -36,6 +36,46 @@
         });
     }
 
+    function setupGestureHandling(map, mapContainer) {
+        if (!L.Browser.mobile && window.innerWidth > 768) return;
+
+        map.dragging.disable();
+        map.scrollWheelZoom.disable();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'eim-gesture-overlay';
+        const msg = document.createElement('div');
+        msg.className = 'eim-gesture-msg';
+        msg.textContent = 'Usa due dita per muovere la mappa';
+        overlay.appendChild(msg);
+        mapContainer.parentElement.appendChild(overlay);
+
+        let hideTimer;
+        let draggingEnabled = false;
+
+        mapContainer.addEventListener('touchstart', function(e) {
+            clearTimeout(hideTimer);
+            if (e.touches.length >= 2) {
+                if (!draggingEnabled) {
+                    map.dragging.enable();
+                    draggingEnabled = true;
+                }
+                overlay.classList.remove('eim-go-visible');
+            } else if (!draggingEnabled) {
+                overlay.classList.add('eim-go-visible');
+                hideTimer = setTimeout(() => overlay.classList.remove('eim-go-visible'), 1500);
+            }
+        }, { passive: true });
+
+        mapContainer.addEventListener('touchend', function() {
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                map.dragging.disable();
+                draggingEnabled = false;
+            }, 300);
+        }, { passive: true });
+    }
+
     function initMap() {
         const mapElement = document.getElementById('event-map');
         if (!mapElement) return;
@@ -64,6 +104,9 @@
         });
         map.addLayer(markerCluster);
         map.setView([centerLat, centerLng], zoom);
+
+        setupGestureHandling(map, mapElement);
+        setTimeout(() => map.invalidateSize(), 150);
 
         loadPois();
         setupEventListeners();

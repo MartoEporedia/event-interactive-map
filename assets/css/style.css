@@ -554,25 +554,44 @@
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    /* Controlli: sticky in cima, non più overlay.
+    /* Wrapper occupa tutta l'altezza schermo su mobile.
+       Filter bar + mappa si dividono lo spazio via flex. */
+    .eim-wrapper {
+        height: 100dvh;
+        height: 100vh; /* fallback browsers senza dvh */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Controlli: sticky in cima, non overlay.
        Resettiamo left/right del desktop per evitare overflow. */
     .eim-map-controls {
-        position: sticky;
-        top: 0;
+        position: relative;
+        top: auto;
         left: auto;
         right: auto;
         width: 100%;
         box-sizing: border-box;
         z-index: 500;
-        border-radius: 8px 8px 0 0;
+        flex-shrink: 0;
+        border-radius: 0;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         padding: 8px;
         gap: 0;
         flex-direction: column;
     }
 
+    /* Mappa riempie il resto dello schermo */
     .eim-map-container {
-        border-radius: 0 0 8px 8px;
+        flex: 1 1 auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        border-radius: 0;
+    }
+
+    #event-map {
+        height: 100% !important;
+        min-height: 0 !important;
     }
 
     /* Header toggle */
@@ -779,4 +798,32 @@
     .eim-error {
         display: none;
     }
+}
+
+/* Gesture overlay (mobile two-finger hint) */
+.eim-gesture-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 900;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.eim-gesture-overlay.eim-go-visible {
+    opacity: 1;
+}
+
+.eim-gesture-msg {
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    text-align: center;
 }
