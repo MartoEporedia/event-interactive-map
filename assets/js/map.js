@@ -7,6 +7,7 @@
     let allPois = [];
     let userMarker = null;
     let activeDay = '';
+    let activeCat = '';
     let poiMarkers = {};  // poi.id → marker
     let bandIndex  = [];  // [{band, day, time, poi}]
 
@@ -129,6 +130,7 @@
             hideLoading();
             allPois = data;
             buildDayFilter(allPois);
+            buildCatFilter(allPois);
             buildBandIndex(allPois);
             filterAndDisplay(activeDay);
         })
@@ -226,13 +228,41 @@
         $container.show();
     }
 
+    // ── Category filter ───────────────────────────────────────────────────────
+
+    function buildCatFilter(pois) {
+        const cats = [];
+        const seen = {};
+        pois.forEach(poi => {
+            const cat = poi.category;
+            if (cat && cat.slug && !seen[cat.slug]) {
+                seen[cat.slug] = true;
+                cats.push(cat);
+            }
+        });
+
+        const $container = $('#eim-cat-filter');
+        $container.empty();
+        if (cats.length < 2) { $container.hide(); return; }
+
+        $container.append(`<button class="eim-cat-btn active" data-cat="">${eimData.strings.allCats || 'Tutti'}</button>`);
+        cats.forEach(cat => {
+            const icon = cat.icon ? `${cat.icon} ` : '';
+            $container.append(`<button class="eim-cat-btn" data-cat="${escapeHtml(cat.slug)}">${icon}${escapeHtml(cat.name)}</button>`);
+        });
+        $container.show();
+    }
+
     // ── Display ───────────────────────────────────────────────────────────────
 
     function filterAndDisplay(day) {
-        const filtered = day
-            ? allPois.filter(poi =>
-                Array.isArray(poi.program) && poi.program.some(slot => slot.day === day))
+        let filtered = activeCat
+            ? allPois.filter(poi => poi.category && poi.category.slug === activeCat)
             : allPois;
+        if (day) {
+            filtered = filtered.filter(poi =>
+                Array.isArray(poi.program) && poi.program.some(slot => slot.day === day));
+        }
         displayPois(filtered, day);
     }
 
@@ -269,6 +299,10 @@
 
     function createPopupContent(poi, filterDay) {
         let html = `<div class="eim-popup-content"><h3>${escapeHtml(poi.title)}</h3>`;
+
+        if (poi.content) {
+            html += `<div class="eim-popup-description">${poi.content}</div>`;
+        }
 
         const program = Array.isArray(poi.program) ? poi.program : [];
         const slots   = filterDay ? program.filter(s => s.day === filterDay) : program;
@@ -310,6 +344,14 @@
             $('.eim-day-btn').removeClass('active');
             $(this).addClass('active');
             activeDay = $(this).data('day');
+            filterAndDisplay(activeDay);
+        });
+
+        // category filter
+        $(document).on('click', '.eim-cat-btn', function() {
+            $('.eim-cat-btn').removeClass('active');
+            $(this).addClass('active');
+            activeCat = $(this).data('cat') || '';
             filterAndDisplay(activeDay);
         });
 

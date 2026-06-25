@@ -22,6 +22,7 @@
             </div>
 
             <div id="eim-day-filter" class="eim-day-filter-group" style="display:none;"></div>
+            <div id="eim-cat-filter" class="eim-cat-filter-group" style="display:none;"></div>
         </div>
     </div>
 

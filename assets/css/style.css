@@ -144,6 +144,32 @@
 .eim-day-btn.eim-day-color-3.active { background: #3498db; }
 .eim-day-btn.eim-day-color-4.active { background: #e74c3c; }
 
+.eim-cat-filter-group {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    margin-top: 4px;
+}
+
+.eim-cat-btn {
+    padding: 7px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.eim-cat-btn:hover { background: #f5f5f5; }
+
+.eim-cat-btn.active,
+.eim-cat-btn.active:hover { background: #1d4a1d; color: white; border-color: transparent; }
+
 .eim-btn {
     padding: 8px 12px;
     background: white;
