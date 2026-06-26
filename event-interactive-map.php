@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Event Interactive Map
  * Description: WordPress plugin for interactive event maps with POI, filters, and mobile UX.
- * Version: 1.6.7
+ * Version: 1.6.8
  * Author: MartoEporedia
  * Text Domain: event-interactive-map
  * Domain Path: /languages
@@ -11,7 +11,7 @@
 defined('ABSPATH') or die('No script kiddies please!');
 
 // Define plugin constants
-define('EIM_VERSION', '1.6.7');
+define('EIM_VERSION', '1.6.8');
 define('EIM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('EIM_PLUGIN_URL', plugin_dir_url(__FILE__));
 

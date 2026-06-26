@@ -99,8 +99,25 @@ function eim_add_poi_meta_box() {
         'normal',
         'high'
     );
+    add_meta_box(
+        'eim_poi_content_hint',
+        __('ℹ️ How fields appear in the map popup', 'event-interactive-map'),
+        'eim_poi_content_hint_callback',
+        'event_poi',
+        'normal',
+        'high'
+    );
 }
 add_action('add_meta_boxes', 'eim_add_poi_meta_box');
+
+function eim_poi_content_hint_callback($post) {
+    echo '<div style="background:#f0f6fc;border-left:4px solid #2271b1;padding:12px 16px;border-radius:0 4px 4px 0;font-size:13px;line-height:1.6;">';
+    echo '<p style="margin:0 0 8px 0;"><strong>' . __('Description / Content (editor above)', 'event-interactive-map') . '</strong><br>';
+    echo __('Shown in the map popup beneath the title. Use it for anything that describes the POI itself: food menus, opening info, general notes, links. Leave it empty for concert stages — the programme repeater below is enough.', 'event-interactive-map') . '</p>';
+    echo '<p style="margin:0;"><strong>' . __('Programme (repeater below)', 'event-interactive-map') . '</strong><br>';
+    echo __('Use this for timed slots: concerts, DJ sets, speakers. Each slot has a day, time, performer name and optional link. For non-event POIs (food stands, entrances, toilets…) you can leave this empty or use the day/time fields to indicate opening hours.', 'event-interactive-map') . '</p>';
+    echo '</div>';
+}
 
 /**
  * Meta box callback function
