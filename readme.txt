@@ -3,7 +3,7 @@ Contributors: martoEporedia
 Tags: map, event, leaflet, poi, festival, interactive
 Requires at least: 6.0
 Tested up to: 6.7
-Stable tag: 1.6.9
+Stable tag: 1.6.10
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -86,6 +86,9 @@ The map tiles come from OpenStreetMap (CDN). The plugin scripts and Leaflet itse
 5. Settings page for the default marker icon.
 
 == Changelog ==
+
+= 1.6.10 =
+* Fixed: the `group` shortcode attribute was ignored (undefined `$atts` in the enqueue hook, PHP warning on every page). The map now loads only the POIs of the given map set.
 
 = 1.6.0 =
 * All UI strings are now in English; Italian translation ships in `languages/it_IT`.
